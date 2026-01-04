@@ -30,7 +30,8 @@ export const QRScanner: React.FC<QRScannerProps> = ({
                 {
                     fps: fps,
                     qrbox: qrbox,
-                    rememberLastUsedCamera: true,
+                    rememberLastUsedCamera: false,
+                    showTorchButtonIfSupported: true,
                     // supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA] 
                 },
             /* verbose= */ false
