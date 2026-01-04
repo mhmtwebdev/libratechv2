@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { BookOpen, Users, LayoutDashboard, ArrowLeftRight, LogOut, Library, RefreshCcw, Menu, X } from 'lucide-react';
-import { LibraryService } from '../services/mockDatabase';
+import { LibraryService } from '../services/firebaseDatabase';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -88,8 +88,8 @@ export const Layout: React.FC<LayoutProps> = ({ children, currentPage, onNavigat
                 key={item.id}
                 onClick={() => handleNavigate(item.id)}
                 className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${isActive
-                    ? 'bg-indigo-700 text-white shadow-md'
-                    : 'text-indigo-200 hover:bg-indigo-800 hover:text-white'
+                  ? 'bg-indigo-700 text-white shadow-md'
+                  : 'text-indigo-200 hover:bg-indigo-800 hover:text-white'
                   }`}
               >
                 <Icon size={20} />

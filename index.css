@@ -1,1 +1,103 @@
 @import "tailwindcss";
+
+/* Custom Styles for HTML5-QRCode Scanner to make it mobile friendly */
+#reader button {
+    padding: 12px 24px !important;
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    border-radius: 8px !important;
+    margin: 10px 0 !important;
+    background-color: #4f46e5 !important;
+    /* Indigo-600 */
+    color: white !important;
+    border: none !important;
+    cursor: pointer !important;
+    width: 100% !important;
+    /* Full width on mobile */
+    display: block !important;
+}
+
+#reader select {
+    padding: 12px !important;
+    font-size: 16px !important;
+    border-radius: 8px !important;
+    border: 1px solid #d1d5db !important;
+    width: 100% !important;
+    margin-bottom: 10px !important;
+    background-color: white !important;
+}
+
+#reader span,
+#reader a {
+    font-size: 16px !important;
+    color: #4b5563 !important;
+}
+
+/* Hide the "Scan using file" link if possible or make it big too */
+#reader__dashboard_section_swaplink {
+    display: inline-block !important;
+    padding: 10px !important;
+    text-decoration: underline !important;
+}
+
+/* Premium Animations for Scanner */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes bounceIn {
+    0% {
+        transform: scale(0.3);
+        opacity: 0;
+    }
+
+    50% {
+        transform: scale(1.05);
+        opacity: 1;
+    }
+
+    70% {
+        transform: scale(0.9);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+.animated-fade-in {
+    animation: fadeIn 0.3s ease-out forwards;
+}
+
+.animate-bounce-in {
+    animation: bounceIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes softFade {
+    from {
+        opacity: 0;
+        transform: translateY(10px) scale(0.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.animate-soft-fade {
+    animation: softFade 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Smooth transition for mode card */
+.transition-all {
+    transition-property: all;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 300ms;
+}

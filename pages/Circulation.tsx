@@ -1,229 +1,205 @@
 import React, { useState } from 'react';
-import { LibraryService } from '../services/mockDatabase';
-import { Scan, ArrowRight, BookDown, BookUp, AlertTriangle, CheckCircle, Camera } from 'lucide-react';
-import { QRScanner } from '../components/QRScanner';
+import { LibraryService } from '../services/firebaseDatabase';
+import { BookDown, BookUp, AlertTriangle, CheckCircle, Zap, List } from 'lucide-react';
+import { OptimizedScanner } from '../components/OptimizedScanner';
 
 type Mode = 'ISSUE' | 'RETURN';
 
 export const Circulation: React.FC = () => {
   const [mode, setMode] = useState<Mode>('ISSUE');
-  const [bookIsbn, setBookIsbn] = useState('');
-  const [studentNum, setStudentNum] = useState('');
   const [duration, setDuration] = useState(14); // Default 14 days
 
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error' | 'warning', msg: string } | null>(null);
+  const [batchResults, setBatchResults] = useState<{ successes: string[], failures: string[] } | null>(null);
 
   // Scanner State
-  const [showScanner, setShowScanner] = useState<'none' | 'book' | 'student'>('none');
+  const [showScanner, setShowScanner] = useState<boolean>(false);
 
-  const handleScanSuccess = (decodedText: string) => {
-    if (showScanner === 'book') {
-      setBookIsbn(decodedText);
-      setShowScanner('none'); // Close scanner after success
-    } else if (showScanner === 'student') {
-      setStudentNum(decodedText);
-      setShowScanner('none');
-    }
-  };
+  const handleBatchComplete = async (studentId: string | null, books: string[]) => {
+    setShowScanner(false);
+    setBatchResults(null);
+    setFeedback({ type: 'warning', msg: 'İşlem yapılıyor, lütfen bekleyin...' });
 
-  const handleIssue = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setFeedback(null);
+    const successes: string[] = [];
+    const failures: string[] = [];
 
-    if (!bookIsbn || !studentNum) {
-      setFeedback({ type: 'error', msg: 'Lütfen hem Kitap hem de Öğrenci QR kodunu okutun.' });
-      return;
-    }
+    for (const isbn of books) {
+      try {
+        const result = mode === 'ISSUE'
+          ? await LibraryService.issueBook(isbn, studentId!, duration)
+          : await LibraryService.returnBook(isbn);
 
-    try {
-      const result = await LibraryService.issueBook(bookIsbn, studentNum, duration);
-      if (result.success) {
-        if (result.warning) {
-          setFeedback({ type: 'warning', msg: result.warning + " (Kitap Başarıyla Verildi)" });
+        if (result.success) {
+          successes.push(`${isbn}: ${result.message}`);
         } else {
-          setFeedback({ type: 'success', msg: result.message });
+          failures.push(`${isbn}: ${result.message}`);
         }
-        setBookIsbn('');
-        setStudentNum('');
-      } else {
-        setFeedback({ type: 'error', msg: result.message });
+      } catch (error) {
+        failures.push(`${isbn}: Sistem hatası`);
       }
-    } catch (error) {
-      setFeedback({ type: 'error', msg: 'Sistem hatası oluştu.' });
+    }
+
+    setBatchResults({ successes, failures });
+
+    if (failures.length === 0) {
+      setFeedback({ type: 'success', msg: `Toplam ${successes.length} kitap başarıyla ${mode === 'ISSUE' ? 'ödünç verildi' : 'iade alındı'}.` });
+    } else {
+      setFeedback({ type: 'warning', msg: `${successes.length} kitap başarılı, ${failures.length} kitapta hata oluştu.` });
     }
   };
-
-  const handleReturn = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setFeedback(null);
-
-    if (!bookIsbn) {
-      setFeedback({ type: 'error', msg: 'Lütfen Kitap QR kodunu okutun.' });
-      return;
-    }
-
-    try {
-      const result = await LibraryService.returnBook(bookIsbn);
-      if (result.success) {
-        setFeedback({ type: 'success', msg: result.message });
-        setBookIsbn('');
-      } else {
-        setFeedback({ type: 'error', msg: result.message });
-      }
-    } catch (error) {
-      setFeedback({ type: 'error', msg: 'Sistem hatası oluştu.' });
-    }
-  };
-
-  // Simulation helpers for Demo purposes
-  const simulateScanBook = () => setBookIsbn('9780451524935'); // 1984 (Available)
-  const simulateScanStudent = () => setStudentNum('2024003'); // Mehmet (No history)
-  const simulateScanStudentWarning = () => setStudentNum('2024002'); // Ayse (Has read 1984)
 
   return (
-    <div className="max-w-3xl mx-auto space-y-8">
+    <div className="max-w-4xl mx-auto space-y-8 pb-20">
       <div className="text-center space-y-2">
-        <h2 className="text-3xl font-bold text-gray-900">Ödünç Bankosu</h2>
-        <p className="text-gray-500">Kitap vermek veya almak için QR kodları taratın.</p>
+        <h2 className="text-4xl font-black text-gray-900 tracking-tight">Ödünç & İade Bankosu</h2>
+        <p className="text-gray-500 text-lg">Hızlı tarama sistemi ile kitap işlemlerini saniyeler içinde tamamlayın.</p>
       </div>
 
-      {/* Mode Switcher */}
-      <div className="flex rounded-lg bg-gray-200 p-1">
-        <button
-          onClick={() => { setMode('ISSUE'); setFeedback(null); setBookIsbn(''); setStudentNum(''); setShowScanner('none'); }}
-          className={`flex-1 py-3 px-6 rounded-md text-sm font-semibold transition-all flex items-center justify-center space-x-2 ${mode === 'ISSUE' ? 'bg-white text-indigo-700 shadow-sm' : 'text-gray-600 hover:text-gray-800'
-            }`}
-        >
-          <BookDown size={20} />
-          <span>Kitap Ver (Ödünç)</span>
-        </button>
-        <button
-          onClick={() => { setMode('RETURN'); setFeedback(null); setBookIsbn(''); setStudentNum(''); setShowScanner('none'); }}
-          className={`flex-1 py-3 px-6 rounded-md text-sm font-semibold transition-all flex items-center justify-center space-x-2 ${mode === 'RETURN' ? 'bg-white text-indigo-700 shadow-sm' : 'text-gray-600 hover:text-gray-800'
-            }`}
-        >
-          <BookUp size={20} />
-          <span>Kitap Al (İade)</span>
-        </button>
+      {/* Main Action Cards */}
+      <div className="grid md:grid-cols-2 gap-6">
+        {/* Issue Card */}
+        <div className={`relative overflow-hidden group rounded-3xl p-8 border-2 transition-all cursor-pointer ${mode === 'ISSUE' ? 'border-indigo-500 bg-white shadow-xl' : 'border-gray-100 bg-gray-50 hover:border-gray-200'}`}
+          onClick={() => { setMode('ISSUE'); setFeedback(null); setBatchResults(null); }}>
+          <div className="flex flex-col h-full justify-between">
+            <div className="space-y-4">
+              <div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${mode === 'ISSUE' ? 'bg-indigo-500 text-white' : 'bg-gray-200 text-gray-400'}`}>
+                <BookDown size={32} />
+              </div>
+              <div>
+                <h3 className="text-2xl font-bold text-gray-900">Kitap Ver (Ödünç)</h3>
+                <p className="text-gray-500 mt-1">Öğrenci kartı ve kitapları taratarak ödünç verin.</p>
+              </div>
+            </div>
+
+            {mode === 'ISSUE' && (
+              <div className="mt-8 space-y-4 animate-fade-in">
+                <div className="space-y-2">
+                  <label className="text-sm font-semibold text-gray-600">Ödünç Süresi</label>
+                  <select
+                    value={duration}
+                    onClick={(e) => e.stopPropagation()}
+                    onChange={(e) => setDuration(Number(e.target.value))}
+                    className="block w-full rounded-xl border-gray-200 border py-3 px-4 focus:ring-2 focus:ring-indigo-500 outline-none"
+                  >
+                    <option value={7}>7 Gün (1 Hafta)</option>
+                    <option value={14}>14 Gün (2 Hafta)</option>
+                    <option value={30}>30 Gün (1 Ay)</option>
+                    <option value={90}>90 Gün (Dönemlik)</option>
+                  </select>
+                </div>
+                <button
+                  onClick={(e) => { e.stopPropagation(); setShowScanner(true); }}
+                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-3 shadow-lg shadow-indigo-200 transition-transform active:scale-95"
+                >
+                  <Zap size={22} />
+                  <span>Hızlı Taramayı Başlat</span>
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Return Card */}
+        <div className={`relative overflow-hidden group rounded-3xl p-8 border-2 transition-all cursor-pointer ${mode === 'RETURN' ? 'border-emerald-500 bg-white shadow-xl' : 'border-gray-100 bg-gray-50 hover:border-gray-200'}`}
+          onClick={() => { setMode('RETURN'); setFeedback(null); setBatchResults(null); }}>
+          <div className="flex flex-col h-full justify-between">
+            <div className="space-y-4">
+              <div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${mode === 'RETURN' ? 'bg-emerald-500 text-white' : 'bg-gray-200 text-gray-400'}`}>
+                <BookUp size={32} />
+              </div>
+              <div>
+                <h3 className="text-2xl font-bold text-gray-900">Kitap Al (İade)</h3>
+                <p className="text-gray-500 mt-1">İade edilen kitapları topluca envantere geri alın.</p>
+              </div>
+            </div>
+
+            {mode === 'RETURN' && (
+              <div className="mt-8 animate-fade-in">
+                <button
+                  onClick={(e) => { e.stopPropagation(); setShowScanner(true); }}
+                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-3 shadow-lg shadow-emerald-200 transition-transform active:scale-95"
+                >
+                  <Zap size={22} />
+                  <span>Hızlı Taramayı Başlat</span>
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Scanner Modal Area */}
-      {showScanner !== 'none' && (
-        <div className="bg-gray-100 p-4 rounded-xl border-2 border-indigo-200">
-          <h3 className="text-center font-bold mb-2 text-indigo-800">
-            {showScanner === 'book' ? 'Kitap QR Kodu Okutun' : 'Öğrenci QR Kodu Okutun'}
-          </h3>
-          <QRScanner onScanSuccess={handleScanSuccess} />
-          <button
-            onClick={() => setShowScanner('none')}
-            className="w-full mt-2 py-2 bg-gray-300 rounded text-gray-700 hover:bg-gray-400"
-          >
-            Kamerayı Kapat
-          </button>
+      {showScanner && (
+        <OptimizedScanner
+          onComplete={handleBatchComplete}
+          onCancel={() => setShowScanner(false)}
+          isReturnOnly={mode === 'RETURN'}
+        />
+      )}
+
+      {/* Feedback Messages */}
+      {feedback && (
+        <div className={`p-6 rounded-3xl flex items-start space-x-4 border ${feedback.type === 'error' ? 'bg-red-50 text-red-800 border-red-100' :
+          feedback.type === 'warning' ? 'bg-amber-50 text-amber-800 border-amber-100' :
+            'bg-green-50 text-green-800 border-green-100'
+          }`}>
+          {feedback.type === 'error' && <AlertTriangle className="shrink-0 mt-1" size={28} />}
+          {feedback.type === 'warning' && <AlertTriangle className="shrink-0 mt-1" size={28} />}
+          {feedback.type === 'success' && <CheckCircle className="shrink-0 mt-1" size={28} />}
+          <div>
+            <p className="text-xl font-bold mb-1">{feedback.type === 'error' ? 'Hata' : feedback.type === 'warning' ? 'Bilgi/Uyarı' : 'Başarılı'}</p>
+            <p className="opacity-90">{feedback.msg}</p>
+          </div>
         </div>
       )}
 
-      <div className="bg-white p-8 rounded-2xl shadow-lg border border-gray-100">
-        <form onSubmit={mode === 'ISSUE' ? handleIssue : handleReturn} className="space-y-6">
-
-          {/* Scanner Input - Book */}
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700">Kitap QR / ISBN</label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
-                <Scan size={20} />
-              </div>
-              <input
-                type="text"
-                autoFocus
-                value={bookIsbn}
-                onChange={(e) => setBookIsbn(e.target.value)}
-                placeholder="Kitap barkodunu taratın..."
-                className="pl-10 block w-full rounded-lg border-gray-300 bg-gray-50 border focus:bg-white focus:border-indigo-500 focus:ring-indigo-500 py-3 transition-colors"
-              />
-              <button
-                type="button"
-                onClick={() => setShowScanner(showScanner === 'book' ? 'none' : 'book')}
-                className="absolute right-2 top-2 p-1.5 bg-indigo-100 text-indigo-600 rounded hover:bg-indigo-200"
-                title="Kamerayı Aç"
-              >
-                <Camera size={18} />
-              </button>
-              {/* <button type="button" onClick={simulateScanBook} className="absolute right-12 top-2 text-xs bg-gray-200 px-2 py-1 rounded text-gray-600 hover:bg-gray-300">Sim</button> */}
-            </div>
+      {/* Batch Results Report */}
+      {batchResults && (
+        <div className="bg-white border border-gray-100 rounded-3xl overflow-hidden shadow-2xl">
+          <div className="bg-gray-50 px-8 py-5 border-b flex justify-between items-center">
+            <h3 className="font-black text-xl text-gray-800 flex items-center gap-3">
+              <List size={24} className="text-gray-400" />
+              İşlem Raporu
+            </h3>
+            <button onClick={() => setBatchResults(null)} className="text-gray-400 hover:text-gray-600 transition-colors">
+              <Zap size={20} className="inline mr-1 rotate-12" /> Raporu Kapat
+            </button>
           </div>
-
-          {/* Issue Mode Specifics */}
-          {mode === 'ISSUE' && (
-            <>
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">Öğrenci QR / No</label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
-                    <Scan size={20} />
-                  </div>
-                  <input
-                    type="text"
-                    value={studentNum}
-                    onChange={(e) => setStudentNum(e.target.value)}
-                    placeholder="Öğrenci kimliğini taratın..."
-                    className="pl-10 block w-full rounded-lg border-gray-300 bg-gray-50 border focus:bg-white focus:border-indigo-500 focus:ring-indigo-500 py-3 transition-colors"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowScanner(showScanner === 'student' ? 'none' : 'student')}
-                    className="absolute right-2 top-2 p-1.5 bg-indigo-100 text-indigo-600 rounded hover:bg-indigo-200"
-                    title="Kamerayı Aç"
-                  >
-                    <Camera size={18} />
-                  </button>
+          <div className="p-8 grid md:grid-cols-2 gap-8">
+            {batchResults.successes.length > 0 && (
+              <div className="space-y-4">
+                <h4 className="text-lg font-black text-green-700 flex items-center gap-2">
+                  <CheckCircle size={20} /> Başarılı ({batchResults.successes.length})
+                </h4>
+                <div className="max-h-60 overflow-y-auto space-y-2 pr-2">
+                  {batchResults.successes.map((msg, i) => (
+                    <div key={i} className="p-3 bg-green-50 rounded-xl text-sm text-green-700 font-medium flex items-center gap-3 border border-green-100">
+                      <div className="w-2 h-2 rounded-full bg-green-400" />
+                      {msg}
+                    </div>
+                  ))}
                 </div>
               </div>
+            )}
 
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">Ödünç Süresi (Gün)</label>
-                <select
-                  value={duration}
-                  onChange={(e) => setDuration(Number(e.target.value))}
-                  className="block w-full rounded-lg border-gray-300 border py-3 px-4 focus:border-indigo-500 focus:ring-indigo-500"
-                >
-                  <option value={7}>7 Gün (1 Hafta)</option>
-                  <option value={14}>14 Gün (2 Hafta)</option>
-                  <option value={30}>30 Gün (1 Ay)</option>
-                  <option value={90}>90 Gün (Dönemlik)</option>
-                </select>
-                <p className="text-xs text-gray-500">Bu süre geçilirse gecikme uyarısı verilecektir.</p>
+            {batchResults.failures.length > 0 && (
+              <div className="space-y-4">
+                <h4 className="text-lg font-black text-red-700 flex items-center gap-2">
+                  <AlertTriangle size={20} /> Hatalı ({batchResults.failures.length})
+                </h4>
+                <div className="max-h-60 overflow-y-auto space-y-2 pr-2">
+                  {batchResults.failures.map((msg, i) => (
+                    <div key={i} className="p-3 bg-red-50 rounded-xl text-sm text-red-700 font-medium flex items-center gap-3 border border-red-100">
+                      <div className="w-2 h-2 rounded-full bg-red-400" />
+                      {msg}
+                    </div>
+                  ))}
+                </div>
               </div>
-            </>
-          )}
-
-          {/* Action Button */}
-          <button
-            type="submit"
-            className={`w-full flex items-center justify-center space-x-2 py-4 rounded-lg font-bold text-white shadow-md transition-transform active:scale-95 ${mode === 'ISSUE' ? 'bg-indigo-600 hover:bg-indigo-700' : 'bg-emerald-600 hover:bg-emerald-700'
-              }`}
-          >
-            <span>{mode === 'ISSUE' ? 'Ödünç İşlemini Tamamla' : 'İade İşlemini Tamamla'}</span>
-            <ArrowRight size={20} />
-          </button>
-        </form>
-
-        {/* Feedback Messages */}
-        {feedback && (
-          <div className={`mt-6 p-4 rounded-lg flex items-start space-x-3 ${feedback.type === 'error' ? 'bg-red-50 text-red-800 border border-red-200' :
-              feedback.type === 'warning' ? 'bg-amber-50 text-amber-800 border border-amber-200' :
-                'bg-green-50 text-green-800 border border-green-200'
-            }`}>
-            {feedback.type === 'error' && <AlertTriangle className="shrink-0" size={24} />}
-            {feedback.type === 'warning' && <AlertTriangle className="shrink-0" size={24} />}
-            {feedback.type === 'success' && <CheckCircle className="shrink-0" size={24} />}
-            <div>
-              <p className="font-semibold">{feedback.type === 'error' ? 'Hata' : feedback.type === 'warning' ? 'Uyarı' : 'Başarılı'}</p>
-              <p>{feedback.msg}</p>
-            </div>
+            )}
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 };

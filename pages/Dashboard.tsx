@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Transaction, Book, Student } from '../types';
-import { LibraryService } from '../services/mockDatabase';
+import { LibraryService } from '../services/firebaseDatabase';
 import { Clock, AlertCircle, CheckCircle2 } from 'lucide-react';
 
 export const Dashboard: React.FC = () => {
@@ -69,7 +69,7 @@ export const Dashboard: React.FC = () => {
             <div>
               <p className="text-sm text-gray-500 font-medium">Zamanında Teslimler</p>
               <h3 className="text-3xl font-bold text-green-600 mt-1">
-                 {loans.filter(l => !isOverdue(l.dueDate)).length}
+                {loans.filter(l => !isOverdue(l.dueDate)).length}
               </h3>
             </div>
             <div className="bg-green-50 p-3 rounded-lg text-green-600">
@@ -107,10 +107,10 @@ export const Dashboard: React.FC = () => {
                 loans.map((loan) => {
                   const overdue = isOverdue(loan.dueDate);
                   const daysKept = getDaysKept(loan.issueDate);
-                  
+
                   return (
-                    <tr 
-                      key={loan.id} 
+                    <tr
+                      key={loan.id}
                       className={`transition-colors ${overdue ? 'bg-red-50 hover:bg-red-100' : 'hover:bg-gray-50'}`}
                     >
                       <td className="px-6 py-4">
@@ -131,11 +131,10 @@ export const Dashboard: React.FC = () => {
                         {daysKept} gün
                       </td>
                       <td className="px-6 py-4">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          overdue 
-                            ? 'bg-red-100 text-red-800 border border-red-200' 
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${overdue
+                            ? 'bg-red-100 text-red-800 border border-red-200'
                             : 'bg-green-100 text-green-800 border border-green-200'
-                        }`}>
+                          }`}>
                           {overdue ? 'Gecikmiş' : 'Zamanında'}
                         </span>
                       </td>
