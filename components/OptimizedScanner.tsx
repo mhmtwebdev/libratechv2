@@ -104,9 +104,12 @@ export const OptimizedScanner: React.FC<OptimizedScannerProps> = ({ onComplete, 
 
     const handleScan = async (decodedText: string) => {
         const now = Date.now();
-        if (now - lastScanTimeRef.current < 2000) {
-            return; // 2s delay to prevent double reads
+        if (now - lastScanTimeRef.current < 1000) {
+            return; // 1s delay to prevent double reads
         }
+
+        // LOCK IMMEDIATELY
+        lastScanTimeRef.current = now;
 
         const { scanState, studentId, books } = stateRef.current;
 
@@ -116,7 +119,6 @@ export const OptimizedScanner: React.FC<OptimizedScannerProps> = ({ onComplete, 
             setStudentId(decodedText);
             setScanState('SCAN_BOOKS');
             flashFeedback(decodedText, 'success', 'Öğrenci Tanımlandı');
-            lastScanTimeRef.current = now;
         } else {
             // Books (SCAN_BOOKS or SCAN_BOOKS_ONLY)
             if (books.includes(decodedText)) return;
@@ -127,7 +129,6 @@ export const OptimizedScanner: React.FC<OptimizedScannerProps> = ({ onComplete, 
                 if (!validation.success) {
                     playBeep('error');
                     flashFeedback(decodedText, 'error', validation.message);
-                    lastScanTimeRef.current = now;
                     return;
                 }
             }
@@ -135,7 +136,6 @@ export const OptimizedScanner: React.FC<OptimizedScannerProps> = ({ onComplete, 
             playBeep('success');
             setBooks(prev => [...prev, decodedText]);
             flashFeedback(decodedText, 'success', isReturnOnly ? 'İade Listesine Eklendi' : 'Ödünç Listesine Eklendi');
-            lastScanTimeRef.current = now;
         }
     };
 

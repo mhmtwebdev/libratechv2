@@ -147,8 +147,8 @@ export const BookInventory: React.FC = () => {
         </div>
       )}
 
-      {/* Book List Table (Web View) */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden no-print">
+      {/* Book List - Desktop Table */}
+      <div className="hidden md:block bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden no-print">
         <table className="w-full text-left">
           <thead className="bg-gray-50">
             <tr>
@@ -185,6 +185,33 @@ export const BookInventory: React.FC = () => {
             ))}
           </tbody>
         </table>
+      </div>
+
+      {/* Book List - Mobile Cards */}
+      <div className="md:hidden space-y-4 no-print">
+        {filteredBooks.length === 0 ? (
+          <div className="bg-white p-6 rounded-xl text-center text-gray-400 border border-gray-200">Kitap bulunamadı.</div>
+        ) : filteredBooks.map(book => (
+          <div key={book.id} className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex justify-between items-start">
+            <div className="space-y-1">
+              <h4 className="font-bold text-gray-900">{book.title}</h4>
+              <p className="text-sm text-gray-500">{book.author}</p>
+              <div className="flex items-center gap-2 mt-2">
+                <span className="text-[10px] font-mono bg-gray-100 px-2 py-0.5 rounded text-gray-600">{book.isbn}</span>
+                <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${book.status === BookStatus.AVAILABLE ? 'bg-green-100 text-green-800' : 'bg-orange-100 text-orange-800'}`}>
+                  {getStatusLabel(book.status)}
+                </span>
+              </div>
+            </div>
+            <button
+              onClick={() => handleDelete(book.id)}
+              className="text-red-400 hover:text-red-600 p-2 rounded-lg bg-red-50 transition-colors"
+              title="Kitabı Sil"
+            >
+              <Trash2 size={18} />
+            </button>
+          </div>
+        ))}
       </div>
 
       {/* Print View (QR Codes Grid) */}

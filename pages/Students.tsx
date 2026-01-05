@@ -172,8 +172,8 @@ export const Students: React.FC = () => {
         </div>
       )}
 
-      {/* Student List (Web View) */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden no-print">
+      {/* Student List - Desktop Table */}
+      <div className="hidden md:block bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden no-print">
         <table className="w-full text-left">
           <thead className="bg-gray-50">
             <tr>
@@ -215,6 +215,38 @@ export const Students: React.FC = () => {
             ))}
           </tbody>
         </table>
+      </div>
+
+      {/* Student List - Mobile Cards */}
+      <div className="md:hidden space-y-4 no-print">
+        {filteredStudents.length === 0 ? (
+          <div className="bg-white p-6 rounded-xl text-center text-gray-400 border border-gray-200">Öğrenci bulunamadı.</div>
+        ) : filteredStudents.map(student => (
+          <div key={student.id} className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex justify-between items-start">
+            <div className="space-y-1">
+              <button
+                onClick={() => handleShowHistory(student)}
+                className="font-bold text-indigo-600 text-left"
+              >
+                {student.name}
+              </button>
+              <p className="text-sm text-gray-500 font-mono">{student.studentNumber}</p>
+              <div className="flex items-center gap-2 mt-2">
+                <span className="text-[10px] bg-gray-100 px-2 py-0.5 rounded text-gray-600 font-bold uppercase">{student.grade}</span>
+                <span className="text-[10px] bg-blue-50 px-2 py-0.5 rounded text-blue-600 font-bold">
+                  {student.readingHistory.length} Kitap
+                </span>
+              </div>
+            </div>
+            <button
+              onClick={() => handleDelete(student.id)}
+              className="text-red-400 hover:text-red-600 p-2 rounded-lg bg-red-50 transition-colors"
+              title="Öğrenciyi Sil"
+            >
+              <Trash2 size={18} />
+            </button>
+          </div>
+        ))}
       </div>
 
       {/* Student Reading History Modal */}
