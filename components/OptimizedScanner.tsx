@@ -58,8 +58,12 @@ export const OptimizedScanner: React.FC<OptimizedScannerProps> = ({ onComplete, 
                 await html5QrCode.start(
                     { facingMode: "environment" },
                     {
-                        fps: 10,
-                        qrbox: { width: 250, height: 250 },
+                        fps: 20,
+                        qrbox: (viewfinderWidth, viewfinderHeight) => {
+                            const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
+                            const size = Math.floor(minEdge * 0.7);
+                            return { width: size, height: size };
+                        },
                         aspectRatio: 1.0,
                         disableFlip: false,
                     },
@@ -175,12 +179,12 @@ export const OptimizedScanner: React.FC<OptimizedScannerProps> = ({ onComplete, 
 
                 {/* Overlay Target Box */}
                 <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-                    <div className={`w-72 h-72 border-4 rounded-3xl opacity-60 ${scanState === 'SCAN_STUDENT' ? 'border-cyan-400' : 'border-emerald-400'}`}>
+                    <div className={`w-64 h-64 md:w-80 md:h-80 border-4 rounded-3xl opacity-60 ${scanState === 'SCAN_STUDENT' ? 'border-cyan-400' : 'border-emerald-400'}`}>
                         {/* Corner accents */}
-                        <div className={`absolute top-0 left-0 w-6 h-6 border-t-4 border-l-4 -mt-1 -ml-1 ${scanState === 'SCAN_STUDENT' ? 'border-cyan-400' : 'border-emerald-400'}`}></div>
-                        <div className={`absolute top-0 right-0 w-6 h-6 border-t-4 border-r-4 -mt-1 -mr-1 ${scanState === 'SCAN_STUDENT' ? 'border-cyan-400' : 'border-emerald-400'}`}></div>
-                        <div className={`absolute bottom-0 left-0 w-6 h-6 border-b-4 border-l-4 -mb-1 -ml-1 ${scanState === 'SCAN_STUDENT' ? 'border-cyan-400' : 'border-emerald-400'}`}></div>
-                        <div className={`absolute bottom-0 right-0 w-6 h-6 border-b-4 border-r-4 -mb-1 -mr-1 ${scanState === 'SCAN_STUDENT' ? 'border-cyan-400' : 'border-emerald-400'}`}></div>
+                        <div className={`absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 -mt-1 -ml-1 rounded-tl-xl ${scanState === 'SCAN_STUDENT' ? 'border-cyan-400' : 'border-emerald-400'}`}></div>
+                        <div className={`absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 -mt-1 -mr-1 rounded-tr-xl ${scanState === 'SCAN_STUDENT' ? 'border-cyan-400' : 'border-emerald-400'}`}></div>
+                        <div className={`absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 -mb-1 -ml-1 rounded-bl-xl ${scanState === 'SCAN_STUDENT' ? 'border-cyan-400' : 'border-emerald-400'}`}></div>
+                        <div className={`absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 -mb-1 -mr-1 rounded-br-xl ${scanState === 'SCAN_STUDENT' ? 'border-cyan-400' : 'border-emerald-400'}`}></div>
                     </div>
                 </div>
 
