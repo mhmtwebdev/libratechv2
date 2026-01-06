@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BookOpen, Users, LayoutDashboard, ArrowLeftRight, LogOut, Library, RefreshCcw, Menu, X } from 'lucide-react';
+import { BookOpen, Users, LayoutDashboard, ArrowLeftRight, LogOut, Library, RefreshCcw, Menu, X, BarChart3 } from 'lucide-react';
 import { LibraryService } from '../services/firebaseDatabase';
 
 interface LayoutProps {
@@ -18,6 +18,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, currentPage, onNavigat
     { id: 'circulation', label: 'Ödünç İşlemleri', icon: ArrowLeftRight },
     { id: 'books', label: 'Kitap Envanteri', icon: BookOpen },
     { id: 'students', label: 'Öğrenciler', icon: Users },
+    { id: 'reports', label: 'Raporlar', icon: BarChart3 },
   ];
 
   const handleResetData = () => {

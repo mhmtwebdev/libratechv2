@@ -5,6 +5,7 @@ import { Dashboard } from './pages/Dashboard';
 import { Circulation } from './pages/Circulation';
 import { BookInventory } from './pages/BookInventory';
 import { Students } from './pages/Students';
+import { Reports } from './pages/Reports';
 import { User } from './types';
 import { BookOpen } from 'lucide-react';
 
@@ -37,14 +38,15 @@ const App: React.FC = () => {
       case 'circulation': return <Circulation />;
       case 'books': return <BookInventory />;
       case 'students': return <Students />;
+      case 'reports': return <Reports />;
       default: return <Dashboard />;
     }
   };
 
   return (
-    <Layout 
-      currentPage={currentPage} 
-      onNavigate={setCurrentPage} 
+    <Layout
+      currentPage={currentPage}
+      onNavigate={setCurrentPage}
       onLogout={handleLogout}
       user={user}
     >
