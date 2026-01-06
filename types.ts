@@ -18,7 +18,7 @@ export interface Student {
   id: string;
   name: string;
   studentNumber: string; // Used for QR Code
-  email: string;
+  email?: string;
   grade: string;
   readingHistory: string[]; // Array of Book IDs
 }
