@@ -134,10 +134,10 @@ export const Reports: React.FC = () => {
                     <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight">Performans ve Analiz</h2>
                     <p className="text-gray-500 mt-1">Kütüphane verilerinin detaylı görsel raporu</p>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                     <button onClick={() => window.print()} className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl shadow-sm hover:bg-gray-50 text-gray-700 transition-all font-semibold no-print">
                         <Printer size={18} />
-                        Sayfayı Yazdır
+                        Yazdır
                     </button>
                     <button onClick={handleShareWithParents} className="flex items-center gap-2 px-4 py-2 bg-purple-600 rounded-xl shadow-lg shadow-purple-100 hover:bg-purple-700 text-white transition-all font-semibold no-print">
                         <Share2 size={18} />
