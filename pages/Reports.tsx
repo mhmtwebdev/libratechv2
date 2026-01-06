@@ -5,7 +5,7 @@ import {
     Download, FileText, BarChart3, Users, BookOpen,
     Award, TrendingUp, Calendar, Search, ChevronRight,
     Printer, Filter, PieChart as PieChartIcon, LogOut, Share2,
-    Eye, EyeOff, Lock, Unlock
+    Eye, EyeOff, Lock, Unlock, ClipboardList
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import {
@@ -20,7 +20,7 @@ export const Reports: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
-    const [showAllCards, setShowAllCards] = useState(false);
+    const [isPubliclyVisible, setIsPubliclyVisible] = useState(false);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -34,16 +34,15 @@ export const Reports: React.FC = () => {
             setStudents(sData);
             setBooks(bData);
             setAllTransactions(tData);
-            setShowAllCards(!settings.parentViewPrivate); // Ayar kapalıysa (private false), karneler açık demektir
+            setIsPubliclyVisible(!settings.parentViewPrivate);
             setLoading(false);
         };
         fetchData();
     }, []);
 
-    const toggleCardsVisibility = async () => {
-        const newValue = !showAllCards;
-        setShowAllCards(newValue);
-        // showAllCards true (Görünür) ise, parentViewPrivate false (Gizli Değil) olmalı
+    const togglePublicVisibility = async () => {
+        const newValue = !isPubliclyVisible;
+        setIsPubliclyVisible(newValue);
         await LibraryService.updateSettings({ parentViewPrivate: !newValue });
     };
 
@@ -147,13 +146,13 @@ export const Reports: React.FC = () => {
                 </div>
                 <div className="flex flex-wrap gap-2">
                     <button
-                        onClick={toggleCardsVisibility}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-xl shadow-sm transition-all font-semibold no-print ${showAllCards ? 'bg-amber-100 text-amber-700 border border-amber-200' : 'bg-white text-gray-700 border border-gray-200'
+                        onClick={togglePublicVisibility}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-xl shadow-sm transition-all font-semibold no-print ${isPubliclyVisible ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-white text-gray-700 border border-gray-200'
                             }`}
-                        title={showAllCards ? "Karneleri Gizle (Veliler de Göremez)" : "Karneleri Göster (Veliler de Görür)"}
+                        title={isPubliclyVisible ? "Veliler Tüm Listeyi Görebilir" : "Veliler Sadece Arama Yapabilir"}
                     >
-                        {showAllCards ? <EyeOff size={18} /> : <Eye size={18} />}
-                        {showAllCards ? "Karneleri Gizle" : "Karneleri Göster"}
+                        {isPubliclyVisible ? <Eye size={18} /> : <EyeOff size={18} />}
+                        {isPubliclyVisible ? "Veliye Açık" : "Veliye Kapalı"}
                     </button>
                     <button onClick={() => window.print()} className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl shadow-sm hover:bg-gray-50 text-gray-700 transition-all font-semibold no-print">
                         <Printer size={18} />
@@ -289,91 +288,77 @@ export const Reports: React.FC = () => {
                 </div>
             </div>
 
-            {/* Student Progress / Report Cards */}
-            {(showAllCards || searchTerm) && (
-                <div className="space-y-6 animate-soft-fade">
-                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                        <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                            <ClipboardList className="text-indigo-600" />
-                            {searchTerm ? 'Arama Sonuçları' : 'Öğrenci Okuma Karneleri'}
-                        </h3>
-                        <div className="relative w-full md:w-80 no-print">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                            <input
-                                type="text"
-                                placeholder="Öğrenci karnesi ara..."
-                                className="w-full pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-xl focus:ring-4 focus:ring-indigo-50 focus:border-indigo-500 transition-all outline-none"
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                            />
-                        </div>
+            {/* Student Progress / Report Cards - Always visible for Teacher */}
+            <div className="space-y-6 animate-soft-fade">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                        <ClipboardList className="text-indigo-600" />
+                        Öğrenci Okuma Karneleri
+                    </h3>
+                    <div className="relative w-full md:w-80 no-print">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                        <input
+                            type="text"
+                            placeholder="Öğrenci karnesi ara..."
+                            className="w-full pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-xl focus:ring-4 focus:ring-indigo-50 focus:border-indigo-500 transition-all outline-none"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
                     </div>
+                </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {filteredStudents.map((student, idx) => (
-                            <div key={student.id} className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:border-indigo-200 transition-all group flex flex-col justify-between">
-                                <div>
-                                    <div className="flex justify-between items-start mb-4">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold text-sm shadow-inner mt-1">
-                                                {student.name.split(' ').map(n => n[0]).join('')}
-                                            </div>
-                                            <div>
-                                                <h4 className="font-bold text-gray-900 leading-tight group-hover:text-indigo-600 transition-colors uppercase">{student.name}</h4>
-                                                <p className="text-xs text-gray-400 font-mono">No: {student.studentNumber} • {student.grade}</p>
-                                            </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {filteredStudents.map((student, idx) => (
+                        <div key={student.id} className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:border-indigo-200 transition-all group flex flex-col justify-between">
+                            <div>
+                                <div className="flex justify-between items-start mb-4">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold text-sm shadow-inner mt-1">
+                                            {student.name.split(' ').map(n => n[0]).join('')}
                                         </div>
-                                        {idx < 3 && (
-                                            <div className="text-amber-500">
-                                                <Award size={20} fill="currentColor" />
-                                            </div>
-                                        )}
-                                    </div>
-                                    <div className="space-y-2 mt-4">
-                                        <div className="flex justify-between text-xs font-bold uppercase tracking-wider text-gray-500 px-1">
-                                            <span>Okuma İlerlemesi</span>
-                                            <span>{student.readingHistory?.length || 0} Kitap</span>
-                                        </div>
-                                        <div className="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
-                                            <div
-                                                className="bg-indigo-600 h-full rounded-full transition-all duration-1000"
-                                                style={{ width: `${Math.min(((student.readingHistory?.length || 0) / (totalBooksRead / (students.length || 1) * 2)) * 100, 100)}%` }}
-                                            />
+                                        <div>
+                                            <h4 className="font-bold text-gray-900 leading-tight group-hover:text-indigo-600 transition-colors uppercase">{student.name}</h4>
+                                            <p className="text-xs text-gray-400 font-mono">No: {student.studentNumber} • {student.grade}</p>
                                         </div>
                                     </div>
+                                    {idx < 3 && (
+                                        <div className="text-amber-500">
+                                            <Award size={20} fill="currentColor" />
+                                        </div>
+                                    )}
                                 </div>
-                                <div className="mt-6 pt-4 border-t border-gray-50 flex items-center justify-between no-print">
-                                    <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Kütüphane Kaydı</span>
-                                    <button
-                                        onClick={() => setSelectedStudent(student)}
-                                        className="text-indigo-600 font-bold text-xs flex items-center gap-1 hover:gap-2 transition-all"
-                                    >
-                                        Detay <ChevronRight size={14} />
-                                    </button>
+                                <div className="space-y-2 mt-4">
+                                    <div className="flex justify-between text-xs font-bold uppercase tracking-wider text-gray-500 px-1">
+                                        <span>Okuma İlerlemesi</span>
+                                        <span>{student.readingHistory?.length || 0} Kitap</span>
+                                    </div>
+                                    <div className="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
+                                        <div
+                                            className="bg-indigo-600 h-full rounded-full transition-all duration-1000"
+                                            style={{ width: `${Math.min(((student.readingHistory?.length || 0) / (totalBooksRead / (students.length || 1) * 2)) * 100, 100)}%` }}
+                                        />
+                                    </div>
                                 </div>
                             </div>
-                        ))}
-                    </div>
-                    {filteredStudents.length === 0 && (
-                        <div className="text-center py-20 bg-gray-50 rounded-[2.5rem] border-2 border-dashed border-gray-100">
-                            <Search className="mx-auto text-gray-300 mb-4" size={48} />
-                            <p className="text-gray-500 font-medium text-lg">Aradığınız öğrenci bulunamadı.</p>
+                            <div className="mt-6 pt-4 border-t border-gray-50 flex items-center justify-between no-print">
+                                <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Kütüphane Kaydı</span>
+                                <button
+                                    onClick={() => setSelectedStudent(student)}
+                                    className="text-indigo-600 font-bold text-xs flex items-center gap-1 hover:gap-2 transition-all"
+                                >
+                                    Detay <ChevronRight size={14} />
+                                </button>
+                            </div>
                         </div>
-                    )}
+                    ))}
                 </div>
-            )}
-
-            {!showAllCards && !searchTerm && (
-                <div className="bg-indigo-50/50 p-12 rounded-[2.5rem] border border-indigo-100 text-center space-y-4 no-print">
-                    <div className="w-20 h-20 bg-white rounded-3xl shadow-soft flex items-center justify-center mx-auto text-indigo-600">
-                        <Users size={40} />
+                {filteredStudents.length === 0 && (
+                    <div className="text-center py-20 bg-gray-50 rounded-[2.5rem] border-2 border-dashed border-gray-100">
+                        <Search className="mx-auto text-gray-300 mb-4" size={48} />
+                        <p className="text-gray-500 font-medium text-lg">Aradığınız öğrenci bulunamadı.</p>
                     </div>
-                    <div className="max-w-md mx-auto">
-                        <h4 className="text-xl font-bold text-gray-900">Öğrenci Karneleri Modu</h4>
-                        <p className="text-gray-500 text-sm mt-2">Şu anda sadece genel istatistikleri görüyorsunuz. Bireysel karneleri görmek için arama yapabilir veya yukarıdaki düğmeyi kullanabilirsiniz.</p>
-                    </div>
-                </div>
-            )}
+                )}
+            </div>
 
             {/* Advanced Filters & Specific Reports */}
             <div className="bg-white p-8 rounded-3xl border border-gray-200 shadow-sm no-print">
@@ -396,6 +381,7 @@ export const Reports: React.FC = () => {
                     ))}
                 </div>
             </div>
+
             {/* Student Detail Modal */}
             {selectedStudent && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in no-print">
@@ -414,7 +400,7 @@ export const Reports: React.FC = () => {
                                 onClick={() => setSelectedStudent(null)}
                                 className="p-3 hover:bg-white/10 rounded-full transition-transform hover:rotate-90"
                             >
-                                <XIcon size={24} />
+                                <LogOut size={24} className="rotate-0" />
                             </button>
                         </div>
 
@@ -452,7 +438,7 @@ export const Reports: React.FC = () => {
                                             <div key={i} className="flex items-center justify-between p-4 bg-white border border-gray-100 rounded-2xl hover:border-indigo-200 hover:shadow-sm transition-all group">
                                                 <div className="flex items-center gap-4">
                                                     <div className="w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
-                                                        <BookIcon size={20} />
+                                                        <BookOpen size={20} />
                                                     </div>
                                                     <div>
                                                         <p className="font-bold text-gray-900">{t.book.title}</p>
@@ -483,9 +469,3 @@ export const Reports: React.FC = () => {
         </div>
     );
 };
-
-// Missing Imports Fix
-const ClipboardList = ({ size, className }: { size?: number, className?: string }) => <FileText size={size} className={className} />;
-const BookIcon = ({ size, className }: { size?: number, className?: string }) => <BookOpen size={size} className={className} />;
-const XIcon = ({ size, className }: { size?: number, className?: string }) => <LogOut size={size} className={className} style={{ transform: 'rotate(0deg)' }} />;
-

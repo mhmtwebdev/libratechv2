@@ -135,9 +135,16 @@ export const ParentView: React.FC = () => {
                     <div className="absolute bottom-0 left-0 w-48 h-48 bg-indigo-400/20 rounded-full -ml-10 -mb-10 blur-2xl" />
                 </div>
 
-                {/* Search Results */}
-                {searchTerm && (
-                    <div className="animate-soft-fade">
+                {/* Student Report Cards Section */}
+                {(searchTerm || !isPrivate) && (
+                    <div className="space-y-6 animate-soft-fade">
+                        <div className="flex items-center gap-3 mb-2">
+                            <Users className="text-indigo-600" size={28} />
+                            <h3 className="text-2xl font-black text-gray-900 uppercase tracking-tight">
+                                {searchTerm ? 'Arama Sonuçları' : 'Öğrenci Okuma Karneleri'}
+                            </h3>
+                        </div>
+
                         {filteredStudents.length === 0 ? (
                             <div className="bg-amber-50 border border-amber-100 p-8 rounded-3xl text-center">
                                 <Info className="mx-auto text-amber-500 mb-2" />
