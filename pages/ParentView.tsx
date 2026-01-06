@@ -228,8 +228,22 @@ export const ParentView: React.FC = () => {
                                 </div>
                                 <div className="bg-emerald-50 p-6 rounded-3xl border border-emerald-100 flex flex-col items-center">
                                     <p className="text-[10px] font-black text-emerald-400 uppercase tracking-widest mb-2">Başarı Puanı</p>
-                                    <p className="text-4xl font-black text-emerald-700">A+</p>
-                                    <p className="text-[10px] text-emerald-400 font-bold mt-1 uppercase">Süper Okuyucu</p>
+                                    <p className={`text-4xl font-black ${(selectedStudent.readingHistory?.length || 0) > 30 ? 'text-emerald-700' :
+                                        (selectedStudent.readingHistory?.length || 0) > 20 ? 'text-blue-700' :
+                                            (selectedStudent.readingHistory?.length || 0) > 10 ? 'text-indigo-700' :
+                                                (selectedStudent.readingHistory?.length || 0) >= 1 ? 'text-amber-700' : 'text-gray-400'
+                                        }`}>
+                                        {(selectedStudent.readingHistory?.length || 0) > 30 ? 'A+' :
+                                            (selectedStudent.readingHistory?.length || 0) > 20 ? 'A' :
+                                                (selectedStudent.readingHistory?.length || 0) > 10 ? 'B' :
+                                                    (selectedStudent.readingHistory?.length || 0) >= 1 ? 'C' : '-'}
+                                    </p>
+                                    <p className="text-[10px] text-emerald-400 font-bold mt-1 uppercase text-center">
+                                        {(selectedStudent.readingHistory?.length || 0) > 30 ? 'Kitap Kurdu A+' :
+                                            (selectedStudent.readingHistory?.length || 0) > 20 ? 'Harika Okuyucu' :
+                                                (selectedStudent.readingHistory?.length || 0) > 10 ? 'İyi Okuyucu' :
+                                                    (selectedStudent.readingHistory?.length || 0) >= 1 ? 'Okuma Yolunda' : 'Yeni Başlıyor'}
+                                    </p>
                                 </div>
                             </div>
 

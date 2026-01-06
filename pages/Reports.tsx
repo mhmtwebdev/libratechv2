@@ -405,7 +405,7 @@ export const Reports: React.FC = () => {
                         </div>
 
                         <div className="p-8 overflow-y-auto flex-grow custom-scrollbar">
-                            <div className="grid grid-cols-3 gap-4 mb-8">
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
                                 <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100">
                                     <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Toplam Kitap</p>
                                     <p className="text-xl font-black text-indigo-600">{selectedStudent.readingHistory?.length || 0}</p>
@@ -414,6 +414,19 @@ export const Reports: React.FC = () => {
                                     <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Sınıf Sırası</p>
                                     <p className="text-xl font-black text-emerald-600">
                                         #{students.filter(s => s.grade === selectedStudent.grade).sort((a, b) => (b.readingHistory?.length || 0) - (a.readingHistory?.length || 0)).findIndex(s => s.id === selectedStudent.id) + 1}
+                                    </p>
+                                </div>
+                                <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100">
+                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Başarı Puanı</p>
+                                    <p className={`text-xl font-black ${(selectedStudent.readingHistory?.length || 0) > 30 ? 'text-emerald-600' :
+                                        (selectedStudent.readingHistory?.length || 0) > 20 ? 'text-blue-600' :
+                                            (selectedStudent.readingHistory?.length || 0) > 10 ? 'text-indigo-600' :
+                                                (selectedStudent.readingHistory?.length || 0) >= 1 ? 'text-amber-600' : 'text-gray-400'
+                                        }`}>
+                                        {(selectedStudent.readingHistory?.length || 0) > 30 ? 'A+' :
+                                            (selectedStudent.readingHistory?.length || 0) > 20 ? 'A' :
+                                                (selectedStudent.readingHistory?.length || 0) > 10 ? 'B' :
+                                                    (selectedStudent.readingHistory?.length || 0) >= 1 ? 'C' : '-'}
                                     </p>
                                 </div>
                                 <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100">
