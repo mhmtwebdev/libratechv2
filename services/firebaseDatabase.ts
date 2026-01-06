@@ -274,38 +274,7 @@ export const LibraryService = {
         }
     },
 
-    resetDatabase: async () => {
-        if (!window.confirm("Kendi envanterinizi sıfırlamak ve örnek verileri yüklemek istediğinize emin misiniz?")) return;
 
-        try {
-            const refs = getRefs();
-            // Add initial books
-            const initialBooks = [
-                { title: "Sefiller", author: "Victor Hugo", isbn: "9789756123456", category: "Klasik", status: BookStatus.AVAILABLE, addedDate: new Date().toISOString() },
-                { title: "Suç ve Ceza", author: "Fyodor Dostoyevski", isbn: "9789756123457", category: "Klasik", status: BookStatus.AVAILABLE, addedDate: new Date().toISOString() },
-                { title: "Küçük Prens", author: "Antoine de Saint-Exupéry", isbn: "9789756123458", category: "Çocuk", status: BookStatus.AVAILABLE, addedDate: new Date().toISOString() }
-            ];
-
-            // Add initial students
-            const initialStudents = [
-                { name: "Ahmet Yılmaz", studentNumber: "101", readingHistory: [] },
-                { name: "Ayşe Demir", studentNumber: "102", readingHistory: [] }
-            ];
-
-            for (const book of initialBooks) {
-                await addDoc(refs.books, book);
-            }
-            for (const student of initialStudents) {
-                await addDoc(refs.students, student);
-            }
-
-            alert("Kendi envanteriniz başarıyla başlatıldı! Sayfayı yenileyebilirsiniz.");
-            window.location.reload();
-        } catch (error) {
-            console.error("Setup error:", error);
-            alert("Başlatma sırasında hata oluştu. Lütfen oturumunuzun açık olduğunu ve Firestore kurallarını kontrol edin.");
-        }
-    },
 
     removeBookFromHistory: async (studentId: string, bookId: string): Promise<{ success: boolean; message: string }> => {
         try {

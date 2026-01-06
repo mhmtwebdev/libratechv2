@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BookOpen, Users, LayoutDashboard, ArrowLeftRight, LogOut, Library, RefreshCcw, Menu, X, BarChart3 } from 'lucide-react';
+import { BookOpen, Users, LayoutDashboard, ArrowLeftRight, LogOut, Library, Menu, X, BarChart3 } from 'lucide-react';
 import { LibraryService } from '../services/firebaseDatabase';
 
 interface LayoutProps {
@@ -21,11 +21,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, currentPage, onNavigat
     { id: 'reports', label: 'Raporlar', icon: BarChart3 },
   ];
 
-  const handleResetData = () => {
-    if (window.confirm("TÜM VERİLER SİLİNECEK ve fabrika ayarlarına dönülecek. Onaylıyor musunuz?")) {
-      LibraryService.resetDatabase();
-    }
-  }
+
 
   const handleNavigate = (id: string) => {
     onNavigate(id);
@@ -113,14 +109,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, currentPage, onNavigat
             </div>
           </div>
 
-          <button
-            onClick={handleResetData}
-            className="w-full flex items-center space-x-3 px-4 py-2 text-slate-500 hover:bg-slate-950 hover:text-cyan-400 rounded-lg transition-colors"
-            title="Veritabanını Sıfırla"
-          >
-            <RefreshCcw size={16} />
-            <span className="text-xs font-bold uppercase tracking-widest">Sıfırla</span>
-          </button>
+
 
           <button
             onClick={onLogout}
