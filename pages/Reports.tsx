@@ -36,7 +36,7 @@ export const Reports: React.FC = () => {
             });
             return acc;
         }, [] as number[]);
-        worksheet['!cols'] = maxWidths.map(w => ({ w: w + 5 }));
+        worksheet['!cols'] = maxWidths.map(w => ({ wch: w + 5 }));
 
         XLSX.writeFile(workbook, `${fileName}.xlsx`);
     };
@@ -121,7 +121,7 @@ export const Reports: React.FC = () => {
         XLSX.utils.book_append_sheet(workbook, worksheet, `${grade} Sınıfı`);
 
         // Sütun genişliklerini ayarla (Her sütun 25 karakter genişliğinde olsun)
-        worksheet['!cols'] = classStudents.map(() => ({ w: 25 }));
+        worksheet['!cols'] = classStudents.map(() => ({ wch: 25 }));
 
         XLSX.writeFile(workbook, `${grade}_Sinifi_Okuma_Raporu.xlsx`);
     };
