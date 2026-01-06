@@ -14,8 +14,9 @@ const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [currentPage, setCurrentPage] = useState('dashboard');
 
-  // Veli Görünümü Kontrolü
-  const isParentView = new URLSearchParams(window.location.search).get('view') === 'parent';
+  // Veli Görünümü Kontrolü (Daha dayanıklı kontrol)
+  const queryParams = new URLSearchParams(window.location.search || window.location.hash.split('?')[1]);
+  const isParentView = queryParams.get('view') === 'parent';
 
   const handleLogin = () => {
     // Simulating Firebase Auth login
