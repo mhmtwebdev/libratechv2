@@ -6,12 +6,16 @@ import { Circulation } from './pages/Circulation';
 import { BookInventory } from './pages/BookInventory';
 import { Students } from './pages/Students';
 import { Reports } from './pages/Reports';
+import { ParentView } from './pages/ParentView';
 import { User } from './types';
 import { BookOpen } from 'lucide-react';
 
 const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [currentPage, setCurrentPage] = useState('dashboard');
+
+  // Veli Görünümü Kontrolü
+  const isParentView = new URLSearchParams(window.location.search).get('view') === 'parent';
 
   const handleLogin = () => {
     // Simulating Firebase Auth login
@@ -27,6 +31,10 @@ const App: React.FC = () => {
     setUser(null);
     setCurrentPage('dashboard');
   };
+
+  if (isParentView) {
+    return <ParentView />;
+  }
 
   if (!user) {
     return <Login onLogin={handleLogin} />;
