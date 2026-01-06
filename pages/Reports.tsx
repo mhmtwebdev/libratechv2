@@ -21,7 +21,6 @@ export const Reports: React.FC = () => {
     const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [showAllCards, setShowAllCards] = useState(false);
-    const [isPrivate, setIsPrivate] = useState(true);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -35,16 +34,17 @@ export const Reports: React.FC = () => {
             setStudents(sData);
             setBooks(bData);
             setAllTransactions(tData);
-            setIsPrivate(settings.parentViewPrivate);
+            setShowAllCards(!settings.parentViewPrivate); // Ayar kapalıysa (private false), karneler açık demektir
             setLoading(false);
         };
         fetchData();
     }, []);
 
-    const togglePrivacy = async () => {
-        const newValue = !isPrivate;
-        setIsPrivate(newValue);
-        await LibraryService.updateSettings({ parentViewPrivate: newValue });
+    const toggleCardsVisibility = async () => {
+        const newValue = !showAllCards;
+        setShowAllCards(newValue);
+        // showAllCards true (Görünür) ise, parentViewPrivate false (Gizli Değil) olmalı
+        await LibraryService.updateSettings({ parentViewPrivate: !newValue });
     };
 
     // Statistics Calculations
@@ -147,22 +147,13 @@ export const Reports: React.FC = () => {
                 </div>
                 <div className="flex flex-wrap gap-2">
                     <button
-                        onClick={togglePrivacy}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-xl shadow-sm transition-all font-semibold no-print ${isPrivate ? 'bg-red-50 text-red-600 border border-red-100' : 'bg-emerald-50 text-emerald-600 border border-emerald-100'
-                            }`}
-                        title={isPrivate ? "Veli Paneli Gizli (Sadece Numara ile)" : "Veli Paneli Açık (Tüm Liste Görünür)"}
-                    >
-                        {isPrivate ? <Lock size={18} /> : <Unlock size={18} />}
-                        {isPrivate ? "Veli Listesini Kilitle" : "Veli Listesini Aç"}
-                    </button>
-                    <button
-                        onClick={() => setShowAllCards(!showAllCards)}
+                        onClick={toggleCardsVisibility}
                         className={`flex items-center gap-2 px-4 py-2 rounded-xl shadow-sm transition-all font-semibold no-print ${showAllCards ? 'bg-amber-100 text-amber-700 border border-amber-200' : 'bg-white text-gray-700 border border-gray-200'
                             }`}
-                        title={showAllCards ? "Karneleri Gizle" : "Tüm Karneleri Göster"}
+                        title={showAllCards ? "Karneleri Gizle (Veliler de Göremez)" : "Karneleri Göster (Veliler de Görür)"}
                     >
                         {showAllCards ? <EyeOff size={18} /> : <Eye size={18} />}
-                        {showAllCards ? "Karneleri Göster" : "Karneleri Göster"}
+                        {showAllCards ? "Karneleri Gizle" : "Karneleri Göster"}
                     </button>
                     <button onClick={() => window.print()} className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl shadow-sm hover:bg-gray-50 text-gray-700 transition-all font-semibold no-print">
                         <Printer size={18} />
