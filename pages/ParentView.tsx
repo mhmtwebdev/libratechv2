@@ -177,45 +177,13 @@ export const ParentView: React.FC = () => {
                     </div>
                 )}
 
-                {/* Library Stats - Public */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm">
-                        <h3 className="text-lg font-black text-gray-900 mb-6 flex items-center gap-2 uppercase tracking-tight">
-                            <TrendingUp className="text-emerald-500" />
-                            Kütüphane Özet
-                        </h3>
-                        <div className="space-y-4">
-                            <div className="flex justify-between items-center bg-gray-50 p-4 rounded-2xl">
-                                <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">Toplam Okuma</span>
-                                <span className="text-2xl font-black text-indigo-600">{totalBooksRead}</span>
-                            </div>
-                            <div className="flex justify-between items-center bg-gray-50 p-4 rounded-2xl">
-                                <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">Haftalık Aktivite</span>
-                                <span className="text-2xl font-black text-emerald-600">{booksReadThisWeek}</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="md:col-span-2 bg-white p-8 rounded-3xl border border-gray-100 shadow-sm min-h-[300px]">
-                        <h3 className="text-lg font-black text-gray-900 mb-6 flex items-center gap-2 uppercase tracking-tight">
-                            <BarChart3 className="text-indigo-500" />
-                            Sınıf Bazlı Hareketlilik
-                        </h3>
-                        <div className="h-48">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <BarChart data={barData}>
-                                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#9ca3af', fontSize: 10, fontWeight: 'bold' }} />
-                                    <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
-                                    <Bar dataKey="count" radius={[4, 4, 0, 0]}>
-                                        {barData.map((entry, index) => (
-                                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                        ))}
-                                    </Bar>
-                                </BarChart>
-                            </ResponsiveContainer>
-                        </div>
-                        <p className="text-[10px] text-gray-400 mt-4 italic font-medium">Grafik kütüphanedeki gerçek zamanlı verileri yansıtmaktadır.</p>
-                    </div>
+                {/* Veli bilgilendirme mesajı */}
+                <div className="bg-white p-6 rounded-3xl border border-indigo-50 shadow-sm flex items-start gap-4 italic text-gray-500 text-sm">
+                    <Info className="text-indigo-400 shrink-0" size={20} />
+                    <p>
+                        Sayın Velimiz, bu panel üzerinden çocuğunuzun kütüphanemizdeki okuma serüvenini takip edebilirsiniz.
+                        Okul numarasını veya tam adını girerek kişisel karnesine ulaşabilir, okuduğu kitapları inceleyebilirsiniz.
+                    </p>
                 </div>
             </div>
 
