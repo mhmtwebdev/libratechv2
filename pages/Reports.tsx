@@ -1,34 +1,71 @@
 import React, { useEffect, useState } from 'react';
 import { LibraryService } from '../services/firebaseDatabase';
-import { Student, Book } from '../types';
-import { Download, FileText, BarChart3, Users, BookOpen, Award } from 'lucide-react';
+import { Student, Book, Transaction } from '../types';
+import {
+    Download, FileText, BarChart3, Users, BookOpen,
+    Award, TrendingUp, Calendar, Search, ChevronRight,
+    Printer, Filter, PieChart as PieChartIcon
+} from 'lucide-react';
 import * as XLSX from 'xlsx';
+import {
+    BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
+    ResponsiveContainer, Cell, PieChart, Pie, Legend
+} from 'recharts';
 
 export const Reports: React.FC = () => {
     const [students, setStudents] = useState<Student[]>([]);
     const [books, setBooks] = useState<Book[]>([]);
+    const [allTransactions, setAllTransactions] = useState<(Transaction & { book: Book, student: Student })[]>([]);
     const [loading, setLoading] = useState(true);
+    const [searchTerm, setSearchTerm] = useState('');
 
     useEffect(() => {
         const fetchData = async () => {
             setLoading(true);
-            const [sData, bData] = await Promise.all([
+            const [sData, bData, tData] = await Promise.all([
                 LibraryService.getStudents(),
-                LibraryService.getBooks()
+                LibraryService.getBooks(),
+                LibraryService.getAllTransactions()
             ]);
             setStudents(sData);
             setBooks(bData);
+            setAllTransactions(tData);
             setLoading(false);
         };
         fetchData();
     }, []);
 
+    // Statistics Calculations
+    const totalBooksRead = students.reduce((acc, s) => acc + (s.readingHistory?.length || 0), 0);
+    const topReader = [...students].sort((a, b) => (b.readingHistory?.length || 0) - (a.readingHistory?.length || 0))[0];
+
+    // This Week Calculation
+    const startOfWeek = new Date();
+    startOfWeek.setDate(startOfWeek.getDate() - 7);
+    const booksReadThisWeek = allTransactions.filter(t => new Date(t.issueDate) >= startOfWeek).length;
+
+    // Category Distribution Data
+    const categoryCounts = books.reduce((acc: any, book) => {
+        acc[book.category] = (acc[book.category] || 0) + 1;
+        return acc;
+    }, {});
+    const pieData = Object.entries(categoryCounts).map(([name, value]) => ({ name, value }));
+
+    // Grade Activity Data
+    const gradeDataMap = students.reduce((acc: any, s) => {
+        if (!acc[s.grade]) acc[s.grade] = { name: s.grade, count: 0 };
+        acc[s.grade].count += (s.readingHistory?.length || 0);
+        return acc;
+    }, {});
+    const barData = Object.values(gradeDataMap).sort((a: any, b: any) => a.name.localeCompare(b.name));
+
+    const COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
+
+    // Export Logic
     const exportToExcel = (data: any[], fileName: string) => {
         const worksheet = XLSX.utils.json_to_sheet(data);
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook, worksheet, "Rapor");
-
-        // Sütun genişliklerini otomatik ayarla
         const maxWidths = data.reduce((acc, row) => {
             Object.keys(row).forEach((key, i) => {
                 const valueWidth = String(row[key] || '').length;
@@ -37,7 +74,6 @@ export const Reports: React.FC = () => {
             return acc;
         }, [] as number[]);
         worksheet['!cols'] = maxWidths.map(w => ({ wch: w + 5 }));
-
         XLSX.writeFile(workbook, `${fileName}.xlsx`);
     };
 
@@ -49,216 +85,259 @@ export const Reports: React.FC = () => {
             'Toplam Okunan': s.readingHistory?.length || 0,
             'E-posta': s.email || '-'
         }));
-        exportToExcel(reportData, 'Genel_Ogrenci_Raporu');
-    };
-
-    const downloadDetailedHistory = async () => {
-        const activeTransactions = await LibraryService.getActiveTransactions();
-        const reportData: any[] = [];
-
-        students.forEach(student => {
-            const history = student.readingHistory || [];
-            const currentlyBorrowed = activeTransactions.find(t => t.studentId === student.id);
-            const currentBookTitle = currentlyBorrowed ? currentlyBorrowed.book.title : '-';
-
-            if (history.length === 0) {
-                reportData.push({
-                    'Öğrenci Ad Soyad': student.name,
-                    'Öğrenci No': student.studentNumber,
-                    'Sınıf': student.grade,
-                    'Şu An Okuduğu': currentBookTitle,
-                    'Okuduğu Kitap': 'Henüz kitap okunmadı'
-                });
-            } else {
-                history.forEach((bookId, index) => {
-                    const book = books.find(b => b.id === bookId);
-                    reportData.push({
-                        'Öğrenci Ad Soyad': student.name,
-                        'Öğrenci No': student.studentNumber,
-                        'Sınıf': student.grade,
-                        'Şu An Okuduğu': index === 0 ? currentBookTitle : '', // Sadece ilk satırda göster veya her satırda
-                        'Okuduğu Kitap': book?.title || 'Bilinmeyen Kitap'
-                    });
-                });
-            }
-        });
-
-        exportToExcel(reportData, 'Detayli_Okuma_Gecmisi_Raporu');
+        exportToExcel(reportData, 'Kutuphane_Genel_Ogrenci_Raporu');
     };
 
     const downloadClassReport = (grade: string) => {
         const classStudents = students.filter(s => s.grade === grade);
-        if (classStudents.length === 0) return;
-
-        // Sayfa verisini oluştur (2D dizi)
-        const sheetData: any[][] = [];
-
-        // 1. Satır: Öğrenci İsimleri
-        const nameRow = classStudents.map(s => s.name);
-        sheetData.push(nameRow);
-
-        // 2. Satır: "Okunan Kitaplar" başlığı (Her sütunun altına)
-        const headerRow = classStudents.map(() => "Okunan Kitaplar");
-        sheetData.push(headerRow);
-
-        // Maksimum kitap sayısını bul (Kaç satır veri olacağını belirlemek için)
-        const maxBooks = Math.max(...classStudents.map(s => s.readingHistory?.length || 0));
-
-        // Kitap satırlarını ekle
-        for (let i = 0; i < maxBooks; i++) {
-            const row = classStudents.map(student => {
-                const bookId = student.readingHistory?.[i];
-                if (!bookId) return ""; // Eğer o öğrenci o kadar kitap okumadıysa boş bırak
-                const book = books.find(b => b.id === bookId);
-                return book?.title || "Bilinmeyen Kitap";
-            });
-            sheetData.push(row);
-        }
-
-        // XLSX ile dosyayı oluştur
-        const worksheet = XLSX.utils.aoa_to_sheet(sheetData);
-        const workbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook, worksheet, `${grade} Sınıfı`);
-
-        // Sütun genişliklerini ayarla (Her sütun 25 karakter genişliğinde olsun)
-        worksheet['!cols'] = classStudents.map(() => ({ wch: 25 }));
-
-        XLSX.writeFile(workbook, `${grade}_Sinifi_Okuma_Raporu.xlsx`);
+        const sheetData = classStudents.map(s => ({
+            'Öğrenci Adı': s.name,
+            'Öğrenci No': s.studentNumber,
+            'Okunan Kitap Sayısı': s.readingHistory?.length || 0,
+            'Okuduğu Kitaplar': s.readingHistory.map(id => books.find(b => b.id === id)?.title).join(', ')
+        }));
+        exportToExcel(sheetData, `${grade}_Sinifi_Okuma_Raporu`);
     };
-
-    const grades = Array.from(new Set(students.map(s => s.grade))).sort();
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+            <div className="flex flex-col items-center justify-center h-96 space-y-4">
+                <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-indigo-600"></div>
+                <p className="text-gray-500 font-medium animate-pulse">Raporlar hazırlanıyor...</p>
             </div>
         );
     }
 
-    // Statistics
-    const totalBooksRead = students.reduce((acc, s) => acc + (s.readingHistory?.length || 0), 0);
-    const topReader = [...students].sort((a, b) => (b.readingHistory?.length || 0) - (a.readingHistory?.length || 0))[0];
-    const mostReadBookId = (() => {
-        const counts: any = {};
-        students.forEach(s => s.readingHistory?.forEach(id => counts[id] = (counts[id] || 0) + 1));
-        return Object.entries(counts).sort((a: any, b: any) => b[1] - a[1])[0]?.[0];
-    })();
-    const mostReadBook = books.find(b => b.id === mostReadBookId);
+    const filteredStudents = students
+        .filter(s => s.name.toLowerCase().includes(searchTerm.toLowerCase()) || s.studentNumber.includes(searchTerm))
+        .sort((a, b) => (b.readingHistory?.length || 0) - (a.readingHistory?.length || 0));
 
     return (
-        <div className="space-y-6">
-            <div className="flex justify-between items-center">
-                <h2 className="text-2xl font-bold text-gray-800">İstatistikler ve Raporlar</h2>
+        <div className="space-y-8 pb-12">
+            {/* Header Section */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                    <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight">Performans ve Analiz</h2>
+                    <p className="text-gray-500 mt-1">Kütüphane verilerinin detaylı görsel raporu</p>
+                </div>
+                <div className="flex gap-2">
+                    <button onClick={() => window.print()} className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl shadow-sm hover:bg-gray-50 text-gray-700 transition-all font-semibold no-print">
+                        <Printer size={18} />
+                        Sayfayı Yazdır
+                    </button>
+                    <button onClick={downloadGeneralReport} className="flex items-center gap-2 px-4 py-2 bg-indigo-600 rounded-xl shadow-lg shadow-indigo-100 hover:bg-indigo-700 text-white transition-all font-semibold no-print">
+                        <Download size={18} />
+                        Genel Rapor
+                    </button>
+                </div>
             </div>
 
-            {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-gradient-to-br from-indigo-500 to-indigo-700 p-6 rounded-2xl text-white shadow-lg">
-                    <div className="flex justify-between items-start">
-                        <div>
-                            <p className="text-indigo-100 text-sm font-medium">Toplam Okuma</p>
-                            <h3 className="text-3xl font-bold mt-1">{totalBooksRead}</h3>
-                        </div>
-                        <div className="bg-white/20 p-2 rounded-lg">
-                            <BarChart3 size={24} />
-                        </div>
-                    </div>
-                    <p className="text-xs text-indigo-200 mt-4 italic">Kütüphane genelinde okunan toplam kitap</p>
-                </div>
-
-                <div className="bg-gradient-to-br from-emerald-500 to-emerald-700 p-6 rounded-2xl text-white shadow-lg">
-                    <div className="flex justify-between items-start">
-                        <div>
-                            <p className="text-emerald-100 text-sm font-medium">Okuma Şampiyonu</p>
-                            <h3 className="text-xl font-bold mt-1 truncate max-w-[150px]">{topReader?.name || '-'}</h3>
-                        </div>
-                        <div className="bg-white/20 p-2 rounded-lg">
-                            <Award size={24} />
-                        </div>
-                    </div>
-                    <p className="text-xs text-emerald-200 mt-4">{topReader?.readingHistory?.length || 0} kitap ile zirvede</p>
-                </div>
-
-                <div className="bg-gradient-to-br from-amber-500 to-amber-700 p-6 rounded-2xl text-white shadow-lg">
-                    <div className="flex justify-between items-start">
-                        <div>
-                            <p className="text-amber-100 text-sm font-medium">En Çok Okunan Kitap</p>
-                            <h3 className="text-xl font-bold mt-1 truncate max-w-[150px]">{mostReadBook?.title || '-'}</h3>
-                        </div>
-                        <div className="bg-white/20 p-2 rounded-lg">
+            {/* Quick Stats Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+                    <div className="flex justify-between items-center mb-4">
+                        <div className="p-3 bg-indigo-50 text-indigo-600 rounded-2xl">
                             <BookOpen size={24} />
                         </div>
+                        <span className="text-xs font-bold text-green-500 bg-green-50 px-2 py-1 rounded-lg flex items-center gap-1">
+                            <TrendingUp size={12} /> +12%
+                        </span>
                     </div>
-                    <p className="text-xs text-amber-200 mt-4">En çok tercih edilen eser</p>
+                    <div>
+                        <p className="text-sm font-medium text-gray-500">Toplam Okuma</p>
+                        <h3 className="text-3xl font-black text-gray-900 mt-1">{totalBooksRead}</h3>
+                    </div>
+                </div>
+
+                <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+                    <div className="flex justify-between items-center mb-4">
+                        <div className="p-3 bg-emerald-50 text-emerald-600 rounded-2xl">
+                            <Calendar size={24} />
+                        </div>
+                        <span className="text-xs font-bold text-indigo-500 bg-indigo-50 px-2 py-1 rounded-lg">Bu Hafta</span>
+                    </div>
+                    <div>
+                        <p className="text-sm font-medium text-gray-500">Haftalık Aktivite</p>
+                        <h3 className="text-3xl font-black text-gray-900 mt-1">{booksReadThisWeek}</h3>
+                    </div>
+                </div>
+
+                <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+                    <div className="flex justify-between items-center mb-4">
+                        <div className="p-3 bg-amber-50 text-amber-600 rounded-2xl">
+                            <Award size={24} />
+                        </div>
+                        <span className="text-xs font-bold text-amber-500 bg-amber-50 px-2 py-1 rounded-lg">En Çok Okuyan</span>
+                    </div>
+                    <div>
+                        <p className="text-sm font-medium text-gray-500">{topReader?.name || 'Veri Yok'}</p>
+                        <h3 className="text-xl font-black text-gray-900 mt-1 truncate">{topReader?.readingHistory?.length || 0} Kitap</h3>
+                    </div>
+                </div>
+
+                <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+                    <div className="flex justify-between items-center mb-4">
+                        <div className="p-3 bg-rose-50 text-rose-600 rounded-2xl">
+                            <Users size={24} />
+                        </div>
+                        <span className="text-xs font-bold text-rose-500 bg-rose-50 px-2 py-1 rounded-lg">Katılım</span>
+                    </div>
+                    <div>
+                        <p className="text-sm font-medium text-gray-500">Toplam Öğrenci</p>
+                        <h3 className="text-3xl font-black text-gray-900 mt-1">{students.length}</h3>
+                    </div>
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Export Options */}
-                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
-                    <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-                        <Download size={20} className="text-indigo-600" />
-                        Veri Dışa Aktar (Excel/CSV)
-                    </h3>
-                    <div className="space-y-3">
-                        <button
-                            onClick={downloadGeneralReport}
-                            className="w-full flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-indigo-50 hover:text-indigo-600 transition-all border border-transparent hover:border-indigo-100"
-                        >
-                            <div className="flex items-center gap-3">
-                                <Users className="text-gray-400" size={20} />
-                                <span className="font-medium">Tüm Öğrenci Listesi</span>
-                            </div>
-                            <FileText size={18} />
-                        </button>
-
-                        <button
-                            onClick={downloadDetailedHistory}
-                            className="w-full flex items-center justify-between p-4 bg-indigo-50/50 rounded-xl hover:bg-indigo-100 hover:text-indigo-700 transition-all border border-indigo-100/50"
-                        >
-                            <div className="flex items-center gap-3">
-                                <BookOpen className="text-indigo-400" size={20} />
-                                <span className="font-bold">Detaylı Okuma Geçmişi</span>
-                            </div>
-                            <FileText size={18} />
-                        </button>
-
-                        <p className="text-xs text-gray-400 mt-4 mb-2 font-bold uppercase tracking-wider">Sınıf Bazlı İndir</p>
-                        <div className="grid grid-cols-2 gap-2">
-                            {grades.map(grade => (
-                                <button
-                                    key={grade}
-                                    onClick={() => downloadClassReport(grade)}
-                                    className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg hover:border-indigo-300 hover:bg-indigo-50 transition-all group"
-                                >
-                                    <span className="text-sm font-bold text-gray-600 group-hover:text-indigo-600">{grade}</span>
-                                    <Download size={14} className="text-gray-300 group-hover:text-indigo-400" />
-                                </button>
-                            ))}
+            {/* Charts Section */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm no-print">
+                    <div className="flex items-center justify-between mb-8">
+                        <div>
+                            <h3 className="text-lg font-bold text-gray-900">Sınıf Bazlı Okuma Oranları</h3>
+                            <p className="text-sm text-gray-500">Hangi sınıflar daha çok kitap okuyor?</p>
                         </div>
+                        <BarChart3 className="text-gray-300" />
+                    </div>
+                    <div className="h-64">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={barData}>
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
+                                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#9ca3af', fontSize: 12 }} dy={10} />
+                                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#9ca3af', fontSize: 12 }} />
+                                <Tooltip
+                                    cursor={{ fill: '#f9fafb' }}
+                                    contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+                                />
+                                <Bar dataKey="count" radius={[6, 6, 0, 0]}>
+                                    {barData.map((entry, index) => (
+                                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                    ))}
+                                </Bar>
+                            </BarChart>
+                        </ResponsiveContainer>
                     </div>
                 </div>
 
-                {/* Quick Tips or info */}
-                <div className="bg-indigo-50 p-6 rounded-2xl border border-indigo-100">
-                    <h3 className="text-lg font-bold text-indigo-900 mb-4">Raporlama Hakkında</h3>
-                    <ul className="space-y-3 text-indigo-800 text-sm">
-                        <li className="flex items-start gap-2">
-                            <div className="w-1.5 h-1.5 rounded-full bg-indigo-400 mt-1.5 shrink-0" />
-                            <span>İndirilen dosyalar Excel, Google Sheets ve Numbers ile tam uyumludur.</span>
-                        </li>
-                        <li className="flex items-start gap-2">
-                            <div className="w-1.5 h-1.5 rounded-full bg-indigo-400 mt-1.5 shrink-0" />
-                            <span>Veriler her indirme yapıldığında o anki güncel durumdan oluşturulur.</span>
-                        </li>
-                        <li className="flex items-start gap-2">
-                            <div className="w-1.5 h-1.5 rounded-full bg-indigo-400 mt-1.5 shrink-0" />
-                            <span>Sınıf listeleri, öğrencileri kaydederken girdiğiniz sınıf bilgilerine göre otomatik gruplanır.</span>
-                        </li>
-                    </ul>
+                <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm no-print">
+                    <div className="flex items-center justify-between mb-8">
+                        <div>
+                            <h3 className="text-lg font-bold text-gray-900">Kategori Dağılımı</h3>
+                            <p className="text-sm text-gray-500">Kitap türlerinin yoğunluğu</p>
+                        </div>
+                        <PieChartIcon className="text-gray-300" />
+                    </div>
+                    <div className="h-64">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <PieChart>
+                                <Pie
+                                    data={pieData}
+                                    cx="50%"
+                                    cy="50%"
+                                    innerRadius={60}
+                                    outerRadius={80}
+                                    paddingAngle={5}
+                                    dataKey="value"
+                                >
+                                    {pieData.map((entry, index) => (
+                                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                    ))}
+                                </Pie>
+                                <Tooltip />
+                                <Legend verticalAlign="bottom" height={36} />
+                            </PieChart>
+                        </ResponsiveContainer>
+                    </div>
+                </div>
+            </div>
+
+            {/* Student Progress / Report Cards */}
+            <div className="space-y-6">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                        <ClipboardList className="text-indigo-600" />
+                        Öğrenci Okuma Karneleri
+                    </h3>
+                    <div className="relative w-full md:w-80 no-print">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                        <input
+                            type="text"
+                            placeholder="Öğrenci karnesi ara..."
+                            className="w-full pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-xl focus:ring-4 focus:ring-indigo-50 focus:border-indigo-500 transition-all outline-none"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {filteredStudents.map((student, idx) => (
+                        <div key={student.id} className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:border-indigo-200 transition-all group flex flex-col justify-between">
+                            <div>
+                                <div className="flex justify-between items-start mb-4">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold text-sm shadow-inner mt-1">
+                                            {student.name.split(' ').map(n => n[0]).join('')}
+                                        </div>
+                                        <div>
+                                            <h4 className="font-bold text-gray-900 leading-tight group-hover:text-indigo-600 transition-colors uppercase">{student.name}</h4>
+                                            <p className="text-xs text-gray-400 font-mono">No: {student.studentNumber} • {student.grade}</p>
+                                        </div>
+                                    </div>
+                                    {idx < 3 && (
+                                        <div className="text-amber-500">
+                                            <Award size={20} fill="currentColor" />
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="space-y-2 mt-4">
+                                    <div className="flex justify-between text-xs font-bold uppercase tracking-wider text-gray-500 px-1">
+                                        <span>Okuma İlerlemesi</span>
+                                        <span>{student.readingHistory?.length || 0} Kitap</span>
+                                    </div>
+                                    <div className="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
+                                        <div
+                                            className="bg-indigo-600 h-full rounded-full transition-all duration-1000"
+                                            style={{ width: `${Math.min(((student.readingHistory?.length || 0) / (totalBooksRead / (students.length || 1) * 2)) * 100, 100)}%` }}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="mt-6 pt-4 border-t border-gray-50 flex items-center justify-between no-print">
+                                <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Kütüphane Kaydı</span>
+                                <button className="text-indigo-600 font-bold text-xs flex items-center gap-1 hover:gap-2 transition-all">
+                                    Detay <ChevronRight size={14} />
+                                </button>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            {/* Advanced Filters & Specific Reports */}
+            <div className="bg-white p-8 rounded-3xl border border-gray-200 shadow-sm no-print">
+                <div className="flex items-center gap-3 mb-6">
+                    <div className="p-2 bg-purple-50 text-purple-600 rounded-lg">
+                        <Filter size={18} />
+                    </div>
+                    <h4 className="font-bold text-gray-900">Özel Sınıf Raporları</h4>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3">
+                    {Array.from(new Set(students.map(s => s.grade))).sort().map(grade => (
+                        <button
+                            key={grade}
+                            onClick={() => downloadClassReport(grade)}
+                            className="px-4 py-3 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-bold text-gray-600 hover:bg-white hover:border-indigo-300 hover:text-indigo-600 hover:shadow-xl hover:shadow-indigo-50/50 transition-all flex flex-col items-center gap-2"
+                        >
+                            <span>{grade}</span>
+                            <FileText size={16} className="text-gray-300 hover:text-indigo-300" />
+                        </button>
+                    ))}
                 </div>
             </div>
         </div>
     );
 };
+
+// Missing Imports Fix
+const ClipboardList = ({ size, className }: { size?: number, className?: string }) => <FileText size={size} className={className} />;

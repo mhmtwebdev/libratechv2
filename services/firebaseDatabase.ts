@@ -128,6 +128,30 @@ export const LibraryService = {
         }
     },
 
+    getAllTransactions: async (): Promise<(Transaction & { book: Book, student: Student })[]> => {
+        try {
+            const tSnapshot = await getDocs(transactionsRef);
+            const transactions = tSnapshot.docs.map(doc => mapDoc<Transaction>(doc));
+
+            const [books, students] = await Promise.all([
+                LibraryService.getBooks(),
+                LibraryService.getStudents()
+            ]);
+
+            return transactions
+                .map(t => {
+                    const book = books.find(b => b.id === t.bookId);
+                    const student = students.find(s => s.id === t.studentId);
+                    if (!book || !student) return null;
+                    return { ...t, book, student };
+                })
+                .filter((t): t is (Transaction & { book: Book, student: Student }) => t !== null);
+        } catch (error) {
+            console.error("Error fetching all transactions:", error);
+            return [];
+        }
+    },
+
     issueBook: async (isbn: string, studentNumber: string, durationDays: number): Promise<{ success: boolean; message: string; warning?: string }> => {
         try {
             // 1. Find Book
