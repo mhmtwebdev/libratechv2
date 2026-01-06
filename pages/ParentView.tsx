@@ -6,7 +6,11 @@ import {
     ChevronRight, Library, Info, Users
 } from 'lucide-react';
 
-export const ParentView: React.FC = () => {
+interface ParentViewProps {
+    teacherId?: string | null;
+}
+
+export const ParentView: React.FC<ParentViewProps> = ({ teacherId }) => {
     const [students, setStudents] = useState<Student[]>([]);
     const [allTransactions, setAllTransactions] = useState<(Transaction & { book: Book, student: Student })[]>([]);
     const [loading, setLoading] = useState(true);
@@ -16,17 +20,21 @@ export const ParentView: React.FC = () => {
 
     useEffect(() => {
         const fetchData = async () => {
+            if (!teacherId) {
+                setLoading(false);
+                return;
+            }
             setLoading(true);
             try {
                 const [sData, , tData, settings] = await Promise.all([
-                    LibraryService.getStudents(),
-                    LibraryService.getBooks(),
-                    LibraryService.getAllTransactions(),
-                    LibraryService.getSettings()
+                    LibraryService.getStudents(teacherId),
+                    LibraryService.getBooks(teacherId),
+                    LibraryService.getAllTransactions(teacherId),
+                    LibraryService.getSettings(teacherId)
                 ]);
                 setStudents(sData);
                 setAllTransactions(tData);
-                setIsPrivate(settings.parentViewPrivate);
+                setIsPrivate(settings?.parentViewPrivate ?? true);
             } catch (error) {
                 console.error("Data fetch error:", error);
             } finally {
@@ -34,7 +42,21 @@ export const ParentView: React.FC = () => {
             }
         };
         fetchData();
-    }, []);
+    }, [teacherId]);
+
+    if (!teacherId) {
+        return (
+            <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
+                <div className="max-w-md w-full bg-white p-10 rounded-[2.5rem] shadow-xl text-center space-y-6">
+                    <div className="w-20 h-20 bg-rose-50 text-rose-500 rounded-3xl flex items-center justify-center mx-auto">
+                        <Info size={40} />
+                    </div>
+                    <h2 className="text-2xl font-black text-slate-800">Geçersiz Bağlantı</h2>
+                    <p className="text-slate-500 font-medium">Veli görünümüne erişmek için geçerli bir öğretmen bağlantısı gereklidir.</p>
+                </div>
+            </div>
+        );
+    }
 
     if (loading) {
         return (

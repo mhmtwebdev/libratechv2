@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { LibraryService } from '../services/firebaseDatabase';
+import { LibraryService, auth } from '../services/firebaseDatabase';
 import { Student, Book, Transaction } from '../types';
 import {
     Download, FileText, BarChart3, Users, BookOpen,
@@ -124,7 +124,12 @@ export const Reports: React.FC = () => {
         .sort((a, b) => (b.readingHistory?.length || 0) - (a.readingHistory?.length || 0));
 
     const handleShareWithParents = () => {
-        const parentUrl = `${window.location.origin}${window.location.pathname}?view=parent`;
+        const teacherId = auth.currentUser?.uid;
+        if (!teacherId) {
+            alert("Öğretmen kimliği bulunamadı. Lütfen giriş yaptığınızdan emin olun.");
+            return;
+        }
+        const parentUrl = `${window.location.origin}${window.location.pathname}?view=parent&teacher=${teacherId}`;
         navigator.clipboard.writeText(parentUrl);
         alert("Veli Takip Linki Kopyalandı!\n\nVeliler bu linke tıklayarak şifresiz bir şekilde çocuklarının karnesini sorgulayabilirler.");
     };

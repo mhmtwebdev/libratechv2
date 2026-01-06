@@ -32,10 +32,21 @@ const db = getFirestore(app);
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
 
-// Collection Refs
-const booksRef = collection(db, "books");
-const studentsRef = collection(db, "students");
-const transactionsRef = collection(db, "transactions");
+// Helper to get collection references scoped to a teacher
+// If teacherId is provided (e.g. for ParentView), it uses that.
+// Otherwise, it uses the currently logged-in teacher's ID.
+export const getRefs = (teacherId?: string) => {
+    const uid = teacherId || auth.currentUser?.uid;
+    if (!uid) {
+        throw new Error("Kullanıcı oturumu veya öğretmen kimliği bulunamadı.");
+    }
+    return {
+        books: collection(db, "users", uid, "books"),
+        students: collection(db, "users", uid, "students"),
+        transactions: collection(db, "users", uid, "transactions"),
+        settings: doc(db, "users", uid, "settings", "global")
+    };
+};
 
 // Converters or Helpers
 const mapDoc = <T>(doc: any): T => {
@@ -44,18 +55,25 @@ const mapDoc = <T>(doc: any): T => {
 
 export const LibraryService = {
     // --- Books ---
-    getBooks: async (): Promise<Book[]> => {
-        const snapshot = await getDocs(booksRef);
-        return snapshot.docs.map(doc => mapDoc<Book>(doc));
+    getBooks: async (teacherId?: string): Promise<Book[]> => {
+        try {
+            const refs = getRefs(teacherId);
+            const snapshot = await getDocs(refs.books);
+            return snapshot.docs.map(doc => mapDoc<Book>(doc));
+        } catch (error) {
+            console.error("getBooks error:", error);
+            return [];
+        }
     },
 
     addBook: async (book: Omit<Book, 'id' | 'status' | 'addedDate'>): Promise<{ success: boolean, message: string }> => {
         try {
-            // Check duplicate ISBN
-            const q = query(booksRef, where("isbn", "==", book.isbn));
+            const refs = getRefs();
+            // Check duplicate ISBN in user's collection
+            const q = query(refs.books, where("isbn", "==", book.isbn));
             const snapshot = await getDocs(q);
             if (!snapshot.empty) {
-                return { success: false, message: 'Bu ISBN numarasına sahip bir kitap zaten var.' };
+                return { success: false, message: 'Bu ISBN numarasına sahip bir kitap zaten envanterinizde var.' };
             }
 
             const newBook = {
@@ -64,7 +82,7 @@ export const LibraryService = {
                 addedDate: new Date().toISOString()
             };
 
-            await addDoc(booksRef, newBook);
+            await addDoc(refs.books, newBook);
             return { success: true, message: 'Kitap başarıyla eklendi.' };
         } catch (e: any) {
             return { success: false, message: 'Hata: ' + e.message };
@@ -72,19 +90,27 @@ export const LibraryService = {
     },
 
     deleteBook: async (id: string): Promise<void> => {
-        await deleteDoc(doc(db, "books", id));
+        const refs = getRefs();
+        await deleteDoc(doc(db, refs.books.path, id));
     },
 
     // --- Students ---
-    getStudents: async (): Promise<Student[]> => {
-        const snapshot = await getDocs(studentsRef);
-        return snapshot.docs.map(doc => mapDoc<Student>(doc));
+    getStudents: async (teacherId?: string): Promise<Student[]> => {
+        try {
+            const refs = getRefs(teacherId);
+            const snapshot = await getDocs(refs.students);
+            return snapshot.docs.map(doc => mapDoc<Student>(doc));
+        } catch (error) {
+            console.error("getStudents error:", error);
+            return [];
+        }
     },
 
     addStudent: async (student: Omit<Student, 'id' | 'readingHistory'>): Promise<{ success: boolean, message: string }> => {
         try {
-            // Check duplicate Student Number
-            const q = query(studentsRef, where("studentNumber", "==", student.studentNumber));
+            const refs = getRefs();
+            // Check duplicate Student Number in user's collection
+            const q = query(refs.students, where("studentNumber", "==", student.studentNumber));
             const snapshot = await getDocs(q);
             if (!snapshot.empty) {
                 return { success: false, message: 'Bu numaraya sahip bir öğrenci zaten kayıtlı.' };
@@ -94,7 +120,7 @@ export const LibraryService = {
                 ...student,
                 readingHistory: []
             };
-            await addDoc(studentsRef, newStudent);
+            await addDoc(refs.students, newStudent);
             return { success: true, message: 'Öğrenci başarıyla eklendi.' };
         } catch (e: any) {
             return { success: false, message: 'Hata: ' + e.message };
@@ -102,21 +128,23 @@ export const LibraryService = {
     },
 
     deleteStudent: async (id: string): Promise<void> => {
-        await deleteDoc(doc(db, "students", id));
+        const refs = getRefs();
+        await deleteDoc(doc(db, refs.students.path, id));
     },
 
     // --- Transactions ---
-    getActiveTransactions: async (): Promise<(Transaction & { book: Book, student: Student })[]> => {
+    getActiveTransactions: async (teacherId?: string): Promise<(Transaction & { book: Book, student: Student })[]> => {
         try {
-            const tSnapshot = await getDocs(transactionsRef);
+            const refs = getRefs(teacherId);
+            const tSnapshot = await getDocs(refs.transactions);
             const transactions = tSnapshot.docs.map(doc => mapDoc<Transaction>(doc));
 
             const activeTransactions = transactions.filter(t => !t.isReturned);
             if (activeTransactions.length === 0) return [];
 
             const [books, students] = await Promise.all([
-                LibraryService.getBooks(),
-                LibraryService.getStudents()
+                LibraryService.getBooks(teacherId),
+                LibraryService.getStudents(teacherId)
             ]);
 
             return activeTransactions
@@ -133,14 +161,15 @@ export const LibraryService = {
         }
     },
 
-    getAllTransactions: async (): Promise<(Transaction & { book: Book, student: Student })[]> => {
+    getAllTransactions: async (teacherId?: string): Promise<(Transaction & { book: Book, student: Student })[]> => {
         try {
-            const tSnapshot = await getDocs(transactionsRef);
+            const refs = getRefs(teacherId);
+            const tSnapshot = await getDocs(refs.transactions);
             const transactions = tSnapshot.docs.map(doc => mapDoc<Transaction>(doc));
 
             const [books, students] = await Promise.all([
-                LibraryService.getBooks(),
-                LibraryService.getStudents()
+                LibraryService.getBooks(teacherId),
+                LibraryService.getStudents(teacherId)
             ]);
 
             return transactions
@@ -159,17 +188,18 @@ export const LibraryService = {
 
     issueBook: async (isbn: string, studentNumber: string, durationDays: number): Promise<{ success: boolean; message: string; warning?: string }> => {
         try {
-            // 1. Find Book
-            const bQuery = query(booksRef, where("isbn", "==", isbn));
+            const refs = getRefs();
+            // 1. Find Book in user's collection
+            const bQuery = query(refs.books, where("isbn", "==", isbn));
             const bSnap = await getDocs(bQuery);
-            if (bSnap.empty) return { success: false, message: 'Bu ISBN/QR kodu ile kitap bulunamadı.' };
+            if (bSnap.empty) return { success: false, message: 'Envanterinizde bu ISBN/QR kodu ile kitap bulunamadı.' };
             const bookDoc = bSnap.docs[0];
             const book = mapDoc<Book>(bookDoc);
 
-            // 2. Find Student
-            const sQuery = query(studentsRef, where("studentNumber", "==", studentNumber));
+            // 2. Find Student in user's collection
+            const sQuery = query(refs.students, where("studentNumber", "==", studentNumber));
             const sSnap = await getDocs(sQuery);
-            if (sSnap.empty) return { success: false, message: 'Bu numara/QR ile öğrenci bulunamadı.' };
+            if (sSnap.empty) return { success: false, message: 'Bu numara/QR ile kayıtlı öğrenci bulunamadı.' };
             const studentDoc = sSnap.docs[0];
             const student = mapDoc<Student>(studentDoc);
 
@@ -192,14 +222,14 @@ export const LibraryService = {
                 dueDate: new Date(Date.now() + durationDays * 24 * 60 * 60 * 1000).toISOString(),
                 isReturned: false
             };
-            await addDoc(transactionsRef, newTransaction);
+            await addDoc(refs.transactions, newTransaction);
 
             // 5. Update Book Status
-            await updateDoc(doc(db, "books", book.id), { status: BookStatus.BORROWED });
+            await updateDoc(doc(db, refs.books.path, book.id), { status: BookStatus.BORROWED });
 
             // 6. Update Student History
             const currentHistory = student.readingHistory || [];
-            await updateDoc(doc(db, "students", student.id), {
+            await updateDoc(doc(db, refs.students.path, student.id), {
                 readingHistory: [...currentHistory, book.id]
             });
 
@@ -212,29 +242,29 @@ export const LibraryService = {
 
     returnBook: async (isbn: string): Promise<{ success: boolean; message: string }> => {
         try {
-            // 1. Find Book
-            const bQuery = query(booksRef, where("isbn", "==", isbn));
+            const refs = getRefs();
+            // 1. Find Book in user's collection
+            const bQuery = query(refs.books, where("isbn", "==", isbn));
             const bSnap = await getDocs(bQuery);
             if (bSnap.empty) return { success: false, message: 'Kitap bulunamadı.' };
             const bookDoc = bSnap.docs[0];
             const book = mapDoc<Book>(bookDoc);
 
-            // 2. Find Active Transaction for this book
-            // Note: In a robust app we query Firestore. Here we scan to find it.
-            const tQuery = query(transactionsRef, where("bookId", "==", book.id), where("isReturned", "==", false));
+            // 2. Find Active Transaction for this book in user's collection
+            const tQuery = query(refs.transactions, where("bookId", "==", book.id), where("isReturned", "==", false));
             const tSnap = await getDocs(tQuery);
 
             if (tSnap.empty) return { success: false, message: 'Bu kitap şu anda ödünçte görünmüyor.' };
             const tDoc = tSnap.docs[0];
 
             // 3. Update Transaction
-            await updateDoc(doc(db, "transactions", tDoc.id), {
+            await updateDoc(doc(db, refs.transactions.path, tDoc.id), {
                 isReturned: true,
                 returnDate: new Date().toISOString()
             });
 
             // 4. Update Book
-            await updateDoc(doc(db, "books", book.id), {
+            await updateDoc(doc(db, refs.books.path, book.id), {
                 status: BookStatus.AVAILABLE
             });
 
@@ -245,9 +275,10 @@ export const LibraryService = {
     },
 
     resetDatabase: async () => {
-        if (!window.confirm("Veritabanını sıfırlamak ve örnek verileri yüklemek istediğinize emin misiniz?")) return;
+        if (!window.confirm("Kendi envanterinizi sıfırlamak ve örnek verileri yüklemek istediğinize emin misiniz?")) return;
 
         try {
+            const refs = getRefs();
             // Add initial books
             const initialBooks = [
                 { title: "Sefiller", author: "Victor Hugo", isbn: "9789756123456", category: "Klasik", status: BookStatus.AVAILABLE, addedDate: new Date().toISOString() },
@@ -262,27 +293,27 @@ export const LibraryService = {
             ];
 
             for (const book of initialBooks) {
-                await addDoc(booksRef, book);
+                await addDoc(refs.books, book);
             }
             for (const student of initialStudents) {
-                await addDoc(studentsRef, student);
+                await addDoc(refs.students, student);
             }
 
-            alert("Veritabanı başarıyla başlatıldı! Sayfayı yenileyebilirsiniz.");
+            alert("Kendi envanteriniz başarıyla başlatıldı! Sayfayı yenileyebilirsiniz.");
             window.location.reload();
         } catch (error) {
             console.error("Setup error:", error);
-            alert("Başlatma sırasında hata oluştu. Lütfen Firestore kurallarını kontrol edin.");
+            alert("Başlatma sırasında hata oluştu. Lütfen oturumunuzun açık olduğunu ve Firestore kurallarını kontrol edin.");
         }
     },
 
     removeBookFromHistory: async (studentId: string, bookId: string): Promise<{ success: boolean; message: string }> => {
         try {
-            const studentRef = doc(db, "students", studentId);
-            const snapshot = await getDocs(query(studentsRef)); // Simplified, ideally we fetch by ID directly
-            const studentDoc = snapshot.docs.find(d => d.id === studentId);
+            const refs = getRefs();
+            const studentRef = doc(db, refs.students.path, studentId);
+            const studentDoc = await getDoc(studentRef);
 
-            if (!studentDoc) return { success: false, message: 'Öğrenci bulunamadı.' };
+            if (!studentDoc.exists()) return { success: false, message: 'Öğrenci bulunamadı.' };
 
             const studentData = studentDoc.data() as Student;
             const updatedHistory = (studentData.readingHistory || []).filter(id => id !== bookId);
@@ -296,7 +327,8 @@ export const LibraryService = {
 
     checkBookForStudent: async (isbn: string, studentNumber: string | null): Promise<{ success: boolean; message: string; type: 'VALID' | 'ALREADY_READ' | 'NOT_AVAILABLE' | 'NOT_FOUND' }> => {
         try {
-            const bQuery = query(booksRef, where("isbn", "==", isbn));
+            const refs = getRefs();
+            const bQuery = query(refs.books, where("isbn", "==", isbn));
             const bSnap = await getDocs(bQuery);
             if (bSnap.empty) return { success: false, message: 'Kitap bulunamadı.', type: 'NOT_FOUND' };
             const book = mapDoc<Book>(bSnap.docs[0]);
@@ -306,7 +338,7 @@ export const LibraryService = {
             }
 
             if (studentNumber) {
-                const sQuery = query(studentsRef, where("studentNumber", "==", studentNumber));
+                const sQuery = query(refs.students, where("studentNumber", "==", studentNumber));
                 const sSnap = await getDocs(sQuery);
                 if (!sSnap.empty) {
                     const student = mapDoc<Student>(sSnap.docs[0]);
@@ -323,9 +355,10 @@ export const LibraryService = {
     },
 
     // --- Settings ---
-    getSettings: async () => {
+    getSettings: async (teacherId?: string) => {
         try {
-            const settingsDoc = await getDoc(doc(db, "settings", "global"));
+            const refs = getRefs(teacherId);
+            const settingsDoc = await getDoc(refs.settings);
             if (settingsDoc.exists()) {
                 return settingsDoc.data();
             }
@@ -338,7 +371,8 @@ export const LibraryService = {
 
     updateSettings: async (settings: { parentViewPrivate: boolean }) => {
         try {
-            await setDoc(doc(db, "settings", "global"), settings);
+            const refs = getRefs();
+            await setDoc(refs.settings, settings);
             return true;
         } catch (error) {
             console.error("Settings update error:", error);

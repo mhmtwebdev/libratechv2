@@ -58,7 +58,8 @@ const App: React.FC = () => {
   };
 
   if (isParentView) {
-    return <ParentView />;
+    const teacherId = queryParams.get('teacher');
+    return <ParentView teacherId={teacherId} />;
   }
 
   if (authLoading) {
