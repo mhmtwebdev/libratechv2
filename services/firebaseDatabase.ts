@@ -9,7 +9,9 @@ import {
     updateDoc,
     query,
     where,
-    Timestamp
+    Timestamp,
+    setDoc,
+    getDoc
 } from "firebase/firestore";
 import { Book, BookStatus, Student, Transaction } from '../types';
 
@@ -314,6 +316,30 @@ export const LibraryService = {
             return { success: true, message: 'Uygun', type: 'VALID' };
         } catch (e) {
             return { success: false, message: 'Hata oluştu.', type: 'NOT_FOUND' };
+        }
+    },
+
+    // --- Settings ---
+    getSettings: async () => {
+        try {
+            const settingsDoc = await getDoc(doc(db, "settings", "global"));
+            if (settingsDoc.exists()) {
+                return settingsDoc.data();
+            }
+            return { parentViewPrivate: true }; // Varsayılan: Gizli
+        } catch (error) {
+            console.error("Settings fetch error:", error);
+            return { parentViewPrivate: true };
+        }
+    },
+
+    updateSettings: async (settings: { parentViewPrivate: boolean }) => {
+        try {
+            await setDoc(doc(db, "settings", "global"), settings);
+            return true;
+        } catch (error) {
+            console.error("Settings update error:", error);
+            return false;
         }
     }
 };

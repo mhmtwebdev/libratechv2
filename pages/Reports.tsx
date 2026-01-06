@@ -5,7 +5,7 @@ import {
     Download, FileText, BarChart3, Users, BookOpen,
     Award, TrendingUp, Calendar, Search, ChevronRight,
     Printer, Filter, PieChart as PieChartIcon, LogOut, Share2,
-    Eye, EyeOff
+    Eye, EyeOff, Lock, Unlock
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import {
@@ -21,22 +21,31 @@ export const Reports: React.FC = () => {
     const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [showAllCards, setShowAllCards] = useState(false);
+    const [isPrivate, setIsPrivate] = useState(true);
 
     useEffect(() => {
         const fetchData = async () => {
             setLoading(true);
-            const [sData, bData, tData] = await Promise.all([
+            const [sData, bData, tData, settings] = await Promise.all([
                 LibraryService.getStudents(),
                 LibraryService.getBooks(),
-                LibraryService.getAllTransactions()
+                LibraryService.getAllTransactions(),
+                LibraryService.getSettings()
             ]);
             setStudents(sData);
             setBooks(bData);
             setAllTransactions(tData);
+            setIsPrivate(settings.parentViewPrivate);
             setLoading(false);
         };
         fetchData();
     }, []);
+
+    const togglePrivacy = async () => {
+        const newValue = !isPrivate;
+        setIsPrivate(newValue);
+        await LibraryService.updateSettings({ parentViewPrivate: newValue });
+    };
 
     // Statistics Calculations
     const totalBooksRead = students.reduce((acc, s) => acc + (s.readingHistory?.length || 0), 0);
@@ -137,6 +146,15 @@ export const Reports: React.FC = () => {
                     <p className="text-gray-500 mt-1">Kütüphane verilerinin detaylı görsel raporu</p>
                 </div>
                 <div className="flex flex-wrap gap-2">
+                    <button
+                        onClick={togglePrivacy}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-xl shadow-sm transition-all font-semibold no-print ${isPrivate ? 'bg-red-50 text-red-600 border border-red-100' : 'bg-emerald-50 text-emerald-600 border border-emerald-100'
+                            }`}
+                        title={isPrivate ? "Veli Paneli Gizli (Sadece Numara ile)" : "Veli Paneli Açık (Tüm Liste Görünür)"}
+                    >
+                        {isPrivate ? <Lock size={18} /> : <Unlock size={18} />}
+                        {isPrivate ? "Veli Listesini Kilitle" : "Veli Listesini Aç"}
+                    </button>
                     <button
                         onClick={() => setShowAllCards(!showAllCards)}
                         className={`flex items-center gap-2 px-4 py-2 rounded-xl shadow-sm transition-all font-semibold no-print ${showAllCards ? 'bg-amber-100 text-amber-700 border border-amber-200' : 'bg-white text-gray-700 border border-gray-200'

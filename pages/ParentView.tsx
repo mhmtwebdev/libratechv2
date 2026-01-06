@@ -4,7 +4,7 @@ import { Student, Book, Transaction } from '../types';
 import {
     BookOpen, Award, TrendingUp, Calendar, Search,
     ChevronRight, BarChart3, PieChart as PieChartIcon,
-    Library, FileText, Info
+    Library, FileText, Info, Users
 } from 'lucide-react';
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -18,19 +18,22 @@ export const ParentView: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
+    const [isPrivate, setIsPrivate] = useState(true);
 
     useEffect(() => {
         const fetchData = async () => {
             setLoading(true);
             try {
-                const [sData, bData, tData] = await Promise.all([
+                const [sData, bData, tData, settings] = await Promise.all([
                     LibraryService.getStudents(),
                     LibraryService.getBooks(),
-                    LibraryService.getAllTransactions()
+                    LibraryService.getAllTransactions(),
+                    LibraryService.getSettings()
                 ]);
                 setStudents(sData);
                 setBooks(bData);
                 setAllTransactions(tData);
+                setIsPrivate(settings.parentViewPrivate);
             } catch (error) {
                 console.error("Data fetch error:", error);
             } finally {
@@ -73,19 +76,22 @@ export const ParentView: React.FC = () => {
     }
 
     const filteredStudents = students.filter(s => {
-        if (!searchTerm) return false;
-
         const term = searchTerm.toLowerCase().trim();
-        const isNumeric = /^\d+$/.test(term);
 
-        if (isNumeric) {
-            // Tam okul numarası eşleşmesi
-            return s.studentNumber === term;
-        } else {
-            // Tam isim eşleşmesi (Küçük/Büyük harf duyarsız ve boşluklar temizlenmiş)
-            return s.name.toLowerCase().trim() === term;
+        // Eğer arama yapılıyorsa her zaman filtrele
+        if (term) {
+            const isNumeric = /^\d+$/.test(term);
+            if (isNumeric) {
+                return s.studentNumber === term;
+            } else {
+                return s.name.toLowerCase().trim() === term;
+            }
         }
-    });
+
+        // Arama yoksa: Gizlilik ayarına bak
+        // isPrivate false ise (Liste Açık) tüm öğrencileri göster
+        return !isPrivate;
+    }).sort((a, b) => (b.readingHistory?.length || 0) - (a.readingHistory?.length || 0));
 
     return (
         <div className="min-h-screen bg-gray-50 pb-12 font-sans">
