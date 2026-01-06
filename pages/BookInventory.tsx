@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Book, BookStatus } from '../types';
 import { LibraryService } from '../services/firebaseDatabase';
-import { Plus, Printer, Trash2, Search } from 'lucide-react';
+import { Plus, Printer, Trash2, Search, BookOpen, QrCode } from 'lucide-react';
 import { QRCodeDisplay } from '../components/QRCodeDisplay';
 
 export const BookInventory: React.FC = () => {
@@ -73,112 +73,148 @@ export const BookInventory: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 no-print">
-        <h2 className="text-2xl font-bold text-gray-800">Kitap Envanteri</h2>
-
-        {/* Search Bar */}
-        <div className="relative w-full md:w-64">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <Search size={18} className="text-gray-400" />
+        <div className="flex items-center gap-3">
+          <div className="p-3 bg-cyan-100 rounded-xl text-cyan-600">
+            <BookOpen size={24} />
           </div>
-          <input
-            type="text"
-            placeholder="Kitap ara..."
-            className="pl-10 block w-full rounded-lg border-gray-300 border py-2 px-4 focus:ring-indigo-500 focus:border-indigo-500"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+          <div>
+            <h2 className="text-2xl font-black text-slate-800 uppercase tracking-tight">Kitap Envanteri</h2>
+            <p className="text-xs text-slate-500 font-bold uppercase tracking-widest">Kütüphane Kayıtları</p>
+          </div>
         </div>
 
-        <div className="flex space-x-3 w-full md:w-auto">
-          <button
-            onClick={handlePrint}
-            className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 flex items-center justify-center space-x-2 flex-1 md:flex-none"
-          >
-            <Printer size={18} />
-            <span>QR Yazdır</span>
-          </button>
-          <button
-            onClick={() => setIsAdding(!isAdding)}
-            className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 flex items-center justify-center space-x-2 flex-1 md:flex-none"
-          >
-            <Plus size={18} />
-            <span>Ekle</span>
-          </button>
+        <div className="flex flex-col md:flex-row gap-3 w-full md:w-auto items-stretch md:items-center">
+          {/* Search Bar */}
+          <div className="relative group w-full md:w-64">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Search size={18} className="text-slate-400 group-focus-within:text-cyan-500 transition-colors" />
+            </div>
+            <input
+              type="text"
+              placeholder="Kitap ara..."
+              className="pl-10 block w-full rounded-xl border-2 border-slate-200 bg-white py-2.5 px-4 font-bold text-slate-700 placeholder:text-slate-400 focus:border-cyan-500 focus:ring-0 transition-all outline-none"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+
+          <div className="flex gap-2">
+            <button
+              onClick={handlePrint}
+              className="bg-slate-100 text-slate-600 px-4 py-2.5 rounded-xl hover:bg-slate-200 font-bold text-sm uppercase tracking-wide flex items-center justify-center gap-2 transition-all flex-1 md:flex-none"
+            >
+              <Printer size={18} />
+              <span className="hidden lg:inline">QR Yazdır</span>
+            </button>
+            <button
+              onClick={() => setIsAdding(!isAdding)}
+              className="bg-cyan-600 text-white px-6 py-2.5 rounded-xl hover:bg-cyan-700 font-bold text-sm uppercase tracking-wide flex items-center justify-center gap-2 shadow-lg shadow-cyan-600/20 transition-all flex-1 md:flex-none"
+            >
+              <Plus size={18} />
+              <span>Ekle</span>
+            </button>
+          </div>
         </div>
       </div>
 
       {/* Add Form */}
       {isAdding && (
-        <div className="bg-white p-6 rounded-xl shadow-md border border-indigo-100 no-print">
-          <h3 className="text-lg font-semibold mb-4">Yeni Kitap Ekle</h3>
-          <form onSubmit={handleAdd} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <input
-              placeholder="Kitap Adı"
-              className="border p-2 rounded"
-              value={newBook.title}
-              onChange={e => setNewBook({ ...newBook, title: e.target.value })}
-              required
-            />
-            <input
-              placeholder="Yazar"
-              className="border p-2 rounded"
-              value={newBook.author}
-              onChange={e => setNewBook({ ...newBook, author: e.target.value })}
-              required
-            />
-            <div className="flex space-x-2">
+        <div className="bg-white p-8 rounded-[2rem] shadow-xl shadow-slate-200/50 border border-slate-100 no-print animate-soft-fade">
+          <h3 className="text-lg font-black text-slate-800 uppercase tracking-tight mb-6 flex items-center gap-2">
+            <div className="w-1 h-6 bg-cyan-500 rounded-full" />
+            Yeni Kitap Ekle
+          </h3>
+          <form onSubmit={handleAdd} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-1">
+              <label className="text-[10px] uppercase tracking-widest font-black text-slate-400 ml-1">Kitap Adı</label>
               <input
-                placeholder="ISBN / Barkod"
-                className="border p-2 rounded flex-1"
-                value={newBook.isbn}
-                onChange={e => setNewBook({ ...newBook, isbn: e.target.value })}
+                placeholder="Örn: Sefiller"
+                className="w-full bg-slate-50 border-2 border-slate-100 rounded-xl p-3 font-bold text-slate-700 outline-none focus:border-cyan-500 transition-all"
+                value={newBook.title}
+                onChange={e => setNewBook({ ...newBook, title: e.target.value })}
                 required
               />
-              <button type="button" onClick={generateRandomISBN} className="text-xs bg-gray-100 px-2 rounded hover:bg-gray-200">Üret</button>
             </div>
-            <input
-              placeholder="Kategori"
-              className="border p-2 rounded"
-              value={newBook.category}
-              onChange={e => setNewBook({ ...newBook, category: e.target.value })}
-            />
-            <button type="submit" className="col-span-2 bg-indigo-600 text-white p-2 rounded hover:bg-indigo-700">Kaydet</button>
+            <div className="space-y-1">
+              <label className="text-[10px] uppercase tracking-widest font-black text-slate-400 ml-1">Yazar</label>
+              <input
+                placeholder="Örn: Victor Hugo"
+                className="w-full bg-slate-50 border-2 border-slate-100 rounded-xl p-3 font-bold text-slate-700 outline-none focus:border-cyan-500 transition-all"
+                value={newBook.author}
+                onChange={e => setNewBook({ ...newBook, author: e.target.value })}
+                required
+              />
+            </div>
+            <div className="space-y-1 md:col-span-1">
+              <label className="text-[10px] uppercase tracking-widest font-black text-slate-400 ml-1">ISBN / Barkod</label>
+              <div className="flex gap-2">
+                <div className="relative flex-1 group">
+                  <QrCode className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-cyan-500 transition-colors" size={20} />
+                  <input
+                    placeholder="ISBN Numarası"
+                    className="w-full pl-10 bg-slate-50 border-2 border-slate-100 rounded-xl p-3 font-mono font-bold text-slate-700 outline-none focus:border-cyan-500 transition-all"
+                    value={newBook.isbn}
+                    onChange={e => setNewBook({ ...newBook, isbn: e.target.value })}
+                    required
+                  />
+                </div>
+                <button type="button" onClick={generateRandomISBN} className="bg-slate-100 text-slate-600 px-3 rounded-xl font-bold text-xs uppercase hover:bg-slate-200 transition-colors">Üret</button>
+              </div>
+            </div>
+            <div className="space-y-1">
+              <label className="text-[10px] uppercase tracking-widest font-black text-slate-400 ml-1">Kategori</label>
+              <input
+                placeholder="Örn: Klasikler"
+                className="w-full bg-slate-50 border-2 border-slate-100 rounded-xl p-3 font-bold text-slate-700 outline-none focus:border-cyan-500 transition-all"
+                value={newBook.category}
+                onChange={e => setNewBook({ ...newBook, category: e.target.value })}
+              />
+            </div>
+            <button type="submit" className="md:col-span-2 bg-cyan-600 text-white rounded-xl py-4 font-black text-sm uppercase tracking-widest hover:bg-cyan-700 shadow-lg shadow-cyan-600/20 active:scale-[0.98] transition-all">
+              Kitabı Kaydet
+            </button>
           </form>
         </div>
       )}
 
       {/* Book List - Desktop Table */}
-      <div className="hidden md:block bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden no-print">
+      <div className="hidden md:block bg-white rounded-[2.5rem] shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden no-print">
         <table className="w-full text-left">
-          <thead className="bg-gray-50">
+          <thead className="bg-slate-50/50">
             <tr>
-              <th className="px-6 py-3 text-sm font-medium text-gray-500">Başlık</th>
-              <th className="px-6 py-3 text-sm font-medium text-gray-500">Yazar</th>
-              <th className="px-6 py-3 text-sm font-medium text-gray-500">ISBN</th>
-              <th className="px-6 py-3 text-sm font-medium text-gray-500">Durum</th>
-              <th className="px-6 py-3 text-sm font-medium text-gray-500 text-right">İşlem</th>
+              <th className="px-8 py-5 text-[11px] font-black text-slate-400 uppercase tracking-widest">Kitap Bilgisi</th>
+              <th className="px-8 py-5 text-[11px] font-black text-slate-400 uppercase tracking-widest">Yazar</th>
+              <th className="px-8 py-5 text-[11px] font-black text-slate-400 uppercase tracking-widest">ISBN</th>
+              <th className="px-8 py-5 text-[11px] font-black text-slate-400 uppercase tracking-widest">Durum</th>
+              <th className="px-8 py-5 text-[11px] font-black text-slate-400 uppercase tracking-widest text-right">İşlem</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100">
+          <tbody className="divide-y divide-slate-50">
             {filteredBooks.length === 0 ? (
-              <tr><td colSpan={5} className="text-center py-6 text-gray-400">Kitap bulunamadı.</td></tr>
+              <tr><td colSpan={5} className="text-center py-12 text-slate-400 font-bold">Aradığınız kriterlerde kitap bulunamadı.</td></tr>
             ) : filteredBooks.map(book => (
-              <tr key={book.id}>
-                <td className="px-6 py-4">{book.title}</td>
-                <td className="px-6 py-4 text-gray-500">{book.author}</td>
-                <td className="px-6 py-4 font-mono text-xs">{book.isbn}</td>
-                <td className="px-6 py-4">
-                  <span className={`text-xs px-2 py-1 rounded-full ${book.status === BookStatus.AVAILABLE ? 'bg-green-100 text-green-800' : 'bg-orange-100 text-orange-800'}`}>
+              <tr key={book.id} className="group hover:bg-slate-50 transition-colors">
+                <td className="px-8 py-4">
+                  <div className="font-bold text-slate-800 text-lg group-hover:text-cyan-700 transition-colors">{book.title}</div>
+                  {book.category && <div className="text-[10px] inline-block bg-slate-100 text-slate-500 px-2 py-0.5 rounded font-bold uppercase tracking-wide mt-1">{book.category}</div>}
+                </td>
+                <td className="px-8 py-4 font-bold text-slate-600">{book.author}</td>
+                <td className="px-8 py-4 font-mono font-medium text-slate-500 bg-slate-50/50 rounded px-2">{book.isbn}</td>
+                <td className="px-8 py-4">
+                  <span className={`inline-flex items-center px-3 py-1 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-sm ${book.status === BookStatus.AVAILABLE
+                    ? 'bg-emerald-100 text-emerald-700 shadow-emerald-200'
+                    : 'bg-rose-100 text-rose-700 shadow-rose-200'
+                    }`}>
                     {getStatusLabel(book.status)}
                   </span>
                 </td>
-                <td className="px-6 py-4 text-right">
+                <td className="px-8 py-4 text-right">
                   <button
                     onClick={() => handleDelete(book.id)}
-                    className="text-red-400 hover:text-red-600 p-1 rounded-full hover:bg-red-50 transition-colors"
+                    className="text-slate-400 hover:text-rose-500 p-2 rounded-xl hover:bg-rose-50 transition-all"
                     title="Kitabı Sil"
                   >
-                    <Trash2 size={16} />
+                    <Trash2 size={18} />
                   </button>
                 </td>
               </tr>
@@ -190,25 +226,25 @@ export const BookInventory: React.FC = () => {
       {/* Book List - Mobile Cards */}
       <div className="md:hidden space-y-4 no-print">
         {filteredBooks.length === 0 ? (
-          <div className="bg-white p-6 rounded-xl text-center text-gray-400 border border-gray-200">Kitap bulunamadı.</div>
+          <div className="bg-white p-8 rounded-2xl text-center text-slate-400 font-bold border border-slate-100">Kitap bulunamadı.</div>
         ) : filteredBooks.map(book => (
-          <div key={book.id} className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex justify-between items-start">
+          <div key={book.id} className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex justify-between items-start">
             <div className="space-y-1">
-              <h4 className="font-bold text-gray-900">{book.title}</h4>
-              <p className="text-sm text-gray-500">{book.author}</p>
-              <div className="flex items-center gap-2 mt-2">
-                <span className="text-[10px] font-mono bg-gray-100 px-2 py-0.5 rounded text-gray-600">{book.isbn}</span>
-                <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${book.status === BookStatus.AVAILABLE ? 'bg-green-100 text-green-800' : 'bg-orange-100 text-orange-800'}`}>
+              <h4 className="font-bold text-slate-900 text-lg">{book.title}</h4>
+              <p className="text-sm font-medium text-slate-500">{book.author}</p>
+              <div className="flex flex-wrap items-center gap-2 mt-3">
+                <span className="text-[10px] font-mono font-bold bg-slate-100 px-2 py-1 rounded text-slate-500 border border-slate-200">{book.isbn}</span>
+                <span className={`text-[10px] px-2 py-1 rounded-lg font-black uppercase tracking-wide ${book.status === BookStatus.AVAILABLE ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>
                   {getStatusLabel(book.status)}
                 </span>
               </div>
             </div>
             <button
               onClick={() => handleDelete(book.id)}
-              className="text-red-400 hover:text-red-600 p-2 rounded-lg bg-red-50 transition-colors"
+              className="text-slate-400 hover:text-rose-500 p-2 rounded-xl bg-slate-50 hover:bg-rose-50 transition-colors"
               title="Kitabı Sil"
             >
-              <Trash2 size={18} />
+              <Trash2 size={20} />
             </button>
           </div>
         ))}

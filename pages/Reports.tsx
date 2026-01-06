@@ -70,7 +70,7 @@ export const Reports: React.FC = () => {
     }, {});
     const barData = Object.values(gradeDataMap).sort((a: any, b: any) => a.name.localeCompare(b.name));
 
-    const COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
+    const COLORS = ['#0891b2', '#0ea5e9', '#0284c7', '#0369a1', '#3b82f6', '#60a5fa'];
 
     // Export Logic
     const exportToExcel = (data: any[], fileName: string) => {
@@ -113,8 +113,8 @@ export const Reports: React.FC = () => {
     if (loading) {
         return (
             <div className="flex flex-col items-center justify-center h-96 space-y-4">
-                <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-indigo-600"></div>
-                <p className="text-gray-500 font-medium animate-pulse">Raporlar hazırlanıyor...</p>
+                <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-cyan-600"></div>
+                <p className="text-slate-500 font-medium animate-pulse">Raporlar hazırlanıyor...</p>
             </div>
         );
     }
@@ -141,28 +141,28 @@ export const Reports: React.FC = () => {
             {/* Header Section */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
-                    <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight">Performans ve Analiz</h2>
-                    <p className="text-gray-500 mt-1">Kütüphane verilerinin detaylı görsel raporu</p>
+                    <h2 className="text-3xl font-black text-slate-800 uppercase tracking-tight">Performans ve Analiz</h2>
+                    <p className="text-slate-500 mt-1 font-medium">Kütüphane verilerinin detaylı görsel raporu</p>
                 </div>
                 <div className="flex flex-wrap gap-2">
                     <button
                         onClick={togglePublicVisibility}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-xl shadow-sm transition-all font-semibold no-print ${isPubliclyVisible ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-white text-gray-700 border border-gray-200'
+                        className={`flex items-center gap-2 px-4 py-2 rounded-xl shadow-sm transition-all font-bold text-sm uppercase tracking-wide no-print ${isPubliclyVisible ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-50 text-slate-600 border border-slate-200'
                             }`}
                         title={isPubliclyVisible ? "Veliler Tüm Listeyi Görebilir" : "Veliler Sadece Arama Yapabilir"}
                     >
                         {isPubliclyVisible ? <Eye size={18} /> : <EyeOff size={18} />}
                         {isPubliclyVisible ? "Veliye Açık" : "Veliye Kapalı"}
                     </button>
-                    <button onClick={() => window.print()} className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl shadow-sm hover:bg-gray-50 text-gray-700 transition-all font-semibold no-print">
+                    <button onClick={() => window.print()} className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-xl shadow-sm hover:bg-slate-50 text-slate-700 transition-all font-bold text-sm uppercase tracking-wide no-print">
                         <Printer size={18} />
                         Yazdır
                     </button>
-                    <button onClick={handleShareWithParents} className="flex items-center gap-2 px-4 py-2 bg-purple-600 rounded-xl shadow-lg shadow-purple-100 hover:bg-purple-700 text-white transition-all font-semibold no-print">
+                    <button onClick={handleShareWithParents} className="flex items-center gap-2 px-4 py-2 bg-blue-600 rounded-xl shadow-lg shadow-blue-200 hover:bg-blue-700 text-white transition-all font-bold text-sm uppercase tracking-wide no-print">
                         <Share2 size={18} />
                         Velilerle Paylaş
                     </button>
-                    <button onClick={downloadGeneralReport} className="flex items-center gap-2 px-4 py-2 bg-indigo-600 rounded-xl shadow-lg shadow-indigo-100 hover:bg-indigo-700 text-white transition-all font-semibold no-print">
+                    <button onClick={downloadGeneralReport} className="flex items-center gap-2 px-4 py-2 bg-cyan-600 rounded-xl shadow-lg shadow-cyan-200 hover:bg-cyan-700 text-white transition-all font-bold text-sm uppercase tracking-wide no-print">
                         <Download size={18} />
                         Genel Rapor
                     </button>
@@ -171,82 +171,82 @@ export const Reports: React.FC = () => {
 
             {/* Quick Stats Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+                <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-lg hover:shadow-cyan-100/50 transition-all flex flex-col justify-between group">
                     <div className="flex justify-between items-center mb-4">
-                        <div className="p-3 bg-indigo-50 text-indigo-600 rounded-2xl">
+                        <div className="p-3 bg-cyan-50 text-cyan-600 rounded-2xl group-hover:bg-cyan-600 group-hover:text-white transition-colors">
                             <BookOpen size={24} />
                         </div>
-                        <span className="text-xs font-bold text-green-500 bg-green-50 px-2 py-1 rounded-lg flex items-center gap-1">
+                        <span className="text-[10px] font-black uppercase tracking-wider text-emerald-600 bg-emerald-50 px-2 py-1 rounded-lg flex items-center gap-1">
                             <TrendingUp size={12} /> +12%
                         </span>
                     </div>
                     <div>
-                        <p className="text-sm font-medium text-gray-500">Toplam Okuma</p>
-                        <h3 className="text-3xl font-black text-gray-900 mt-1">{totalBooksRead}</h3>
+                        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Toplam Okuma</p>
+                        <h3 className="text-3xl font-black text-slate-800 mt-1">{totalBooksRead}</h3>
                     </div>
                 </div>
 
-                <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+                <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-lg hover:shadow-emerald-100/50 transition-all flex flex-col justify-between group">
                     <div className="flex justify-between items-center mb-4">
-                        <div className="p-3 bg-emerald-50 text-emerald-600 rounded-2xl">
+                        <div className="p-3 bg-emerald-50 text-emerald-600 rounded-2xl group-hover:bg-emerald-600 group-hover:text-white transition-colors">
                             <Calendar size={24} />
                         </div>
-                        <span className="text-xs font-bold text-indigo-500 bg-indigo-50 px-2 py-1 rounded-lg">Bu Hafta</span>
+                        <span className="text-[10px] font-black uppercase tracking-wider text-cyan-600 bg-cyan-50 px-2 py-1 rounded-lg">Bu Hafta</span>
                     </div>
                     <div>
-                        <p className="text-sm font-medium text-gray-500">Haftalık Aktivite</p>
-                        <h3 className="text-3xl font-black text-gray-900 mt-1">{booksReadThisWeek}</h3>
+                        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Haftalık Aktivite</p>
+                        <h3 className="text-3xl font-black text-slate-800 mt-1">{booksReadThisWeek}</h3>
                     </div>
                 </div>
 
-                <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+                <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-lg hover:shadow-amber-100/50 transition-all flex flex-col justify-between group">
                     <div className="flex justify-between items-center mb-4">
-                        <div className="p-3 bg-amber-50 text-amber-600 rounded-2xl">
+                        <div className="p-3 bg-amber-50 text-amber-600 rounded-2xl group-hover:bg-amber-500 group-hover:text-white transition-colors">
                             <Award size={24} />
                         </div>
-                        <span className="text-xs font-bold text-amber-500 bg-amber-50 px-2 py-1 rounded-lg">En Çok Okuyan</span>
+                        <span className="text-[10px] font-black uppercase tracking-wider text-amber-600 bg-amber-50 px-2 py-1 rounded-lg">En Çok Okuyan</span>
                     </div>
                     <div>
-                        <p className="text-sm font-medium text-gray-500">{topReader?.name || 'Veri Yok'}</p>
-                        <h3 className="text-xl font-black text-gray-900 mt-1 truncate">{topReader?.readingHistory?.length || 0} Kitap</h3>
+                        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{topReader?.name || 'Veri Yok'}</p>
+                        <h3 className="text-xl font-black text-slate-800 mt-1 truncate">{topReader?.readingHistory?.length || 0} Kitap</h3>
                     </div>
                 </div>
 
-                <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+                <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-lg hover:shadow-blue-100/50 transition-all flex flex-col justify-between group">
                     <div className="flex justify-between items-center mb-4">
-                        <div className="p-3 bg-rose-50 text-rose-600 rounded-2xl">
+                        <div className="p-3 bg-blue-50 text-blue-600 rounded-2xl group-hover:bg-blue-600 group-hover:text-white transition-colors">
                             <Users size={24} />
                         </div>
-                        <span className="text-xs font-bold text-rose-500 bg-rose-50 px-2 py-1 rounded-lg">Katılım</span>
+                        <span className="text-[10px] font-black uppercase tracking-wider text-blue-600 bg-blue-50 px-2 py-1 rounded-lg">Katılım</span>
                     </div>
                     <div>
-                        <p className="text-sm font-medium text-gray-500">Toplam Öğrenci</p>
-                        <h3 className="text-3xl font-black text-gray-900 mt-1">{students.length}</h3>
+                        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Toplam Öğrenci</p>
+                        <h3 className="text-3xl font-black text-slate-800 mt-1">{students.length}</h3>
                     </div>
                 </div>
             </div>
 
             {/* Charts Section */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm no-print">
+                <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm no-print">
                     <div className="flex items-center justify-between mb-8">
                         <div>
-                            <h3 className="text-lg font-bold text-gray-900">Sınıf Bazlı Okuma Oranları</h3>
-                            <p className="text-sm text-gray-500">Hangi sınıflar daha çok kitap okuyor?</p>
+                            <h3 className="text-lg font-black text-slate-800 uppercase tracking-tight">Sınıf Bazlı İstatistikler</h3>
+                            <p className="text-sm font-medium text-slate-500">Hangi sınıflar daha çok kitap okuyor?</p>
                         </div>
-                        <BarChart3 className="text-gray-300" />
+                        <BarChart3 className="text-cyan-200" />
                     </div>
                     <div className="h-64">
-                        <ResponsiveContainer width="100%" height="100%">
+                        <ResponsiveContainer width="100%" height="100%" minWidth={0}>
                             <BarChart data={barData}>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
-                                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#9ca3af', fontSize: 12 }} dy={10} />
-                                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#9ca3af', fontSize: 12 }} />
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12, fontWeight: 700 }} dy={10} />
+                                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12, fontWeight: 700 }} />
                                 <Tooltip
-                                    cursor={{ fill: '#f9fafb' }}
-                                    contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+                                    cursor={{ fill: '#f8fafc' }}
+                                    contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', fontFamily: 'inherit' }}
                                 />
-                                <Bar dataKey="count" radius={[6, 6, 0, 0]}>
+                                <Bar dataKey="count" radius={[8, 8, 0, 0]}>
                                     {barData.map((entry, index) => (
                                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                     ))}
@@ -256,23 +256,23 @@ export const Reports: React.FC = () => {
                     </div>
                 </div>
 
-                <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm no-print">
+                <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm no-print">
                     <div className="flex items-center justify-between mb-8">
                         <div>
-                            <h3 className="text-lg font-bold text-gray-900">Kategori Dağılımı</h3>
-                            <p className="text-sm text-gray-500">Kitap türlerinin yoğunluğu</p>
+                            <h3 className="text-lg font-black text-slate-800 uppercase tracking-tight">Kategori Dağılımı</h3>
+                            <p className="text-sm font-medium text-slate-500">Kitap türlerinin yoğunluğu</p>
                         </div>
-                        <PieChartIcon className="text-gray-300" />
+                        <PieChartIcon className="text-cyan-200" />
                     </div>
                     <div className="h-64">
-                        <ResponsiveContainer width="100%" height="100%">
+                        <ResponsiveContainer width="100%" height="100%" minWidth={0}>
                             <PieChart>
                                 <Pie
                                     data={pieData}
                                     cx="50%"
                                     cy="50%"
-                                    innerRadius={60}
-                                    outerRadius={80}
+                                    innerRadius={70}
+                                    outerRadius={90}
                                     paddingAngle={5}
                                     dataKey="value"
                                 >
@@ -280,8 +280,8 @@ export const Reports: React.FC = () => {
                                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                     ))}
                                 </Pie>
-                                <Tooltip />
-                                <Legend verticalAlign="bottom" height={36} />
+                                <Tooltip contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }} />
+                                <Legend verticalAlign="bottom" height={36} iconType="circle" />
                             </PieChart>
                         </ResponsiveContainer>
                     </div>
@@ -291,16 +291,16 @@ export const Reports: React.FC = () => {
             {/* Student Progress / Report Cards - Always visible for Teacher */}
             <div className="space-y-6 animate-soft-fade">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                    <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                        <ClipboardList className="text-indigo-600" />
+                    <h3 className="text-xl font-black text-slate-800 flex items-center gap-2 uppercase tracking-tight">
+                        <ClipboardList className="text-cyan-600" />
                         Öğrenci Okuma Karneleri
                     </h3>
-                    <div className="relative w-full md:w-80 no-print">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                    <div className="relative w-full md:w-80 no-print group">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-cyan-500 transition-colors" size={18} />
                         <input
                             type="text"
                             placeholder="Öğrenci karnesi ara..."
-                            className="w-full pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-xl focus:ring-4 focus:ring-indigo-50 focus:border-indigo-500 transition-all outline-none"
+                            className="w-full pl-10 pr-4 py-3 bg-white border-2 border-slate-100 rounded-xl font-bold text-slate-700 placeholder:text-slate-400 focus:border-cyan-500 transition-all outline-none"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
@@ -309,42 +309,42 @@ export const Reports: React.FC = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {filteredStudents.map((student, idx) => (
-                        <div key={student.id} className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:border-indigo-200 transition-all group flex flex-col justify-between">
+                        <div key={student.id} className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-xl hover:shadow-cyan-100/50 hover:border-cyan-200 transition-all group flex flex-col justify-between">
                             <div>
                                 <div className="flex justify-between items-start mb-4">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold text-sm shadow-inner mt-1">
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center text-white font-black text-lg shadow-lg shadow-cyan-200 mt-1">
                                             {student.name.split(' ').map(n => n[0]).join('')}
                                         </div>
                                         <div>
-                                            <h4 className="font-bold text-gray-900 leading-tight group-hover:text-indigo-600 transition-colors uppercase">{student.name}</h4>
-                                            <p className="text-xs text-gray-400 font-mono">No: {student.studentNumber} • {student.grade}</p>
+                                            <h4 className="font-black text-slate-800 leading-tight group-hover:text-cyan-600 transition-colors uppercase tracking-tight">{student.name}</h4>
+                                            <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1">No: {student.studentNumber} • {student.grade}</p>
                                         </div>
                                     </div>
                                     {idx < 3 && (
-                                        <div className="text-amber-500">
-                                            <Award size={20} fill="currentColor" />
+                                        <div className="text-amber-400 drop-shadow-sm">
+                                            <Award size={24} fill="currentColor" />
                                         </div>
                                     )}
                                 </div>
-                                <div className="space-y-2 mt-4">
-                                    <div className="flex justify-between text-xs font-bold uppercase tracking-wider text-gray-500 px-1">
+                                <div className="space-y-2 mt-6">
+                                    <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-slate-400 px-1">
                                         <span>Okuma İlerlemesi</span>
-                                        <span>{student.readingHistory?.length || 0} Kitap</span>
+                                        <span className="text-cyan-600">{student.readingHistory?.length || 0} Kitap</span>
                                     </div>
-                                    <div className="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
+                                    <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
                                         <div
-                                            className="bg-indigo-600 h-full rounded-full transition-all duration-1000"
+                                            className="bg-gradient-to-r from-cyan-500 to-blue-500 h-full rounded-full transition-all duration-1000 shadow-[0_0_10px_rgba(6,182,212,0.5)]"
                                             style={{ width: `${Math.min(((student.readingHistory?.length || 0) / (totalBooksRead / (students.length || 1) * 2)) * 100, 100)}%` }}
                                         />
                                     </div>
                                 </div>
                             </div>
-                            <div className="mt-6 pt-4 border-t border-gray-50 flex items-center justify-between no-print">
-                                <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Kütüphane Kaydı</span>
+                            <div className="mt-6 pt-4 border-t border-slate-50 flex items-center justify-between no-print">
+                                <span className="text-[10px] text-slate-300 font-black uppercase tracking-widest">Kütüphane Kaydı</span>
                                 <button
                                     onClick={() => setSelectedStudent(student)}
-                                    className="text-indigo-600 font-bold text-xs flex items-center gap-1 hover:gap-2 transition-all"
+                                    className="text-cyan-600 font-bold text-xs flex items-center gap-1 hover:gap-2 transition-all uppercase tracking-wide bg-cyan-50 px-3 py-1.5 rounded-lg hover:bg-cyan-100"
                                 >
                                     Detay <ChevronRight size={14} />
                                 </button>
@@ -353,30 +353,30 @@ export const Reports: React.FC = () => {
                     ))}
                 </div>
                 {filteredStudents.length === 0 && (
-                    <div className="text-center py-20 bg-gray-50 rounded-[2.5rem] border-2 border-dashed border-gray-100">
-                        <Search className="mx-auto text-gray-300 mb-4" size={48} />
-                        <p className="text-gray-500 font-medium text-lg">Aradığınız öğrenci bulunamadı.</p>
+                    <div className="text-center py-20 bg-white rounded-[2.5rem] border-2 border-dashed border-slate-200">
+                        <Search className="mx-auto text-slate-200 mb-4" size={48} />
+                        <p className="text-slate-400 font-bold text-lg">Aradığınız öğrenci bulunamadı.</p>
                     </div>
                 )}
             </div>
 
             {/* Advanced Filters & Specific Reports */}
-            <div className="bg-white p-8 rounded-3xl border border-gray-200 shadow-sm no-print">
+            <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm no-print">
                 <div className="flex items-center gap-3 mb-6">
-                    <div className="p-2 bg-purple-50 text-purple-600 rounded-lg">
-                        <Filter size={18} />
+                    <div className="p-2 bg-blue-50 text-blue-600 rounded-xl">
+                        <Filter size={20} />
                     </div>
-                    <h4 className="font-bold text-gray-900">Özel Sınıf Raporları</h4>
+                    <h4 className="font-black text-slate-800 uppercase tracking-tight text-lg">Özel Sınıf Raporları</h4>
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3">
                     {Array.from(new Set(students.map(s => s.grade))).sort().map(grade => (
                         <button
                             key={grade}
                             onClick={() => downloadClassReport(grade)}
-                            className="px-4 py-3 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-bold text-gray-600 hover:bg-white hover:border-indigo-300 hover:text-indigo-600 hover:shadow-xl hover:shadow-indigo-50/50 transition-all flex flex-col items-center gap-2"
+                            className="px-4 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl text-sm font-bold text-slate-600 hover:bg-white hover:border-cyan-300 hover:text-cyan-600 hover:shadow-xl hover:shadow-cyan-50/50 transition-all flex flex-col items-center gap-2 group"
                         >
-                            <span>{grade}</span>
-                            <FileText size={16} className="text-gray-300 hover:text-indigo-300" />
+                            <span className="text-lg">{grade}</span>
+                            <FileText size={16} className="text-slate-300 group-hover:text-cyan-400 transition-colors" />
                         </button>
                     ))}
                 </div>
@@ -384,44 +384,45 @@ export const Reports: React.FC = () => {
 
             {/* Student Detail Modal */}
             {selectedStudent && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in no-print">
-                    <div className="bg-white w-full max-w-2xl rounded-[2.5rem] shadow-2xl overflow-hidden animate-soft-fade max-h-[90vh] flex flex-col">
-                        <div className="bg-gradient-to-r from-indigo-600 to-purple-600 p-8 text-white relative flex justify-between items-center shrink-0">
-                            <div className="flex items-center gap-6">
-                                <div className="w-16 h-16 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center text-3xl font-bold shadow-soft">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-md animate-fade-in no-print">
+                    <div className="bg-white w-full max-w-2xl rounded-[3rem] shadow-2xl overflow-hidden animate-soft-fade max-h-[90vh] flex flex-col border border-white/20">
+                        <div className="bg-cyan-600 p-10 text-white relative flex justify-between items-center shrink-0 overflow-hidden">
+                            <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+                            <div className="flex items-center gap-6 relative z-10">
+                                <div className="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-3xl flex items-center justify-center text-4xl font-black shadow-inner border border-white/10">
                                     {selectedStudent.name.split(' ').map(n => n[0]).join('')}
                                 </div>
                                 <div>
-                                    <h3 className="text-2xl font-black uppercase tracking-tight">{selectedStudent.name}</h3>
-                                    <p className="text-indigo-100 opacity-80 font-medium">Bireysel Okuma Gelişim Karnesi</p>
+                                    <h3 className="text-3xl font-black uppercase tracking-tighter">{selectedStudent.name}</h3>
+                                    <p className="text-cyan-100 font-bold opacity-90 mt-1">Bireysel Okuma Gelişim Karnesi</p>
                                 </div>
                             </div>
                             <button
                                 onClick={() => setSelectedStudent(null)}
-                                className="p-3 hover:bg-white/10 rounded-full transition-transform hover:rotate-90"
+                                className="p-3 hover:bg-white/20 rounded-2xl transition-all relative z-10"
                             >
-                                <LogOut size={24} className="rotate-0" />
+                                <LogOut size={24} className="text-white" />
                             </button>
                         </div>
 
-                        <div className="p-8 overflow-y-auto flex-grow custom-scrollbar">
+                        <div className="p-8 overflow-y-auto flex-grow custom-scrollbar bg-slate-50">
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                                <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100">
-                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Toplam Kitap</p>
-                                    <p className="text-xl font-black text-indigo-600">{selectedStudent.readingHistory?.length || 0}</p>
+                                <div className="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm">
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Toplam Kitap</p>
+                                    <p className="text-2xl font-black text-cyan-600">{selectedStudent.readingHistory?.length || 0}</p>
                                 </div>
-                                <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100">
-                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Sınıf Sırası</p>
-                                    <p className="text-xl font-black text-emerald-600">
+                                <div className="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm">
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Sınıf Sırası</p>
+                                    <p className="text-2xl font-black text-emerald-500">
                                         #{students.filter(s => s.grade === selectedStudent.grade).sort((a, b) => (b.readingHistory?.length || 0) - (a.readingHistory?.length || 0)).findIndex(s => s.id === selectedStudent.id) + 1}
                                     </p>
                                 </div>
-                                <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100">
-                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Başarı Puanı</p>
-                                    <p className={`text-xl font-black ${(selectedStudent.readingHistory?.length || 0) > 30 ? 'text-emerald-600' :
-                                        (selectedStudent.readingHistory?.length || 0) > 20 ? 'text-blue-600' :
-                                            (selectedStudent.readingHistory?.length || 0) > 10 ? 'text-indigo-600' :
-                                                (selectedStudent.readingHistory?.length || 0) >= 1 ? 'text-amber-600' : 'text-gray-400'
+                                <div className="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm">
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Başarı Puanı</p>
+                                    <p className={`text-2xl font-black ${(selectedStudent.readingHistory?.length || 0) > 30 ? 'text-emerald-500' :
+                                        (selectedStudent.readingHistory?.length || 0) > 20 ? 'text-blue-500' :
+                                            (selectedStudent.readingHistory?.length || 0) > 10 ? 'text-cyan-500' :
+                                                (selectedStudent.readingHistory?.length || 0) >= 1 ? 'text-amber-500' : 'text-slate-300'
                                         }`}>
                                         {(selectedStudent.readingHistory?.length || 0) > 30 ? 'A+' :
                                             (selectedStudent.readingHistory?.length || 0) > 20 ? 'A' :
@@ -429,36 +430,36 @@ export const Reports: React.FC = () => {
                                                     (selectedStudent.readingHistory?.length || 0) >= 1 ? 'C' : '-'}
                                     </p>
                                 </div>
-                                <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100">
-                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Öğrenci No</p>
-                                    <p className="text-xl font-black text-purple-600">{selectedStudent.studentNumber}</p>
+                                <div className="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm">
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Öğrenci No</p>
+                                    <p className="text-2xl font-black text-purple-500">{selectedStudent.studentNumber}</p>
                                 </div>
                             </div>
 
                             <div className="space-y-4">
-                                <h4 className="font-bold text-gray-900 flex items-center gap-2 text-lg">
-                                    <TrendingUp size={20} className="text-indigo-500" />
+                                <h4 className="font-black text-slate-800 flex items-center gap-2 text-lg uppercase tracking-tight">
+                                    <TrendingUp size={24} className="text-cyan-500" />
                                     Okuma Serüveni
                                 </h4>
                                 {getStudentHistory(selectedStudent.id).length === 0 ? (
-                                    <div className="text-center py-10 bg-gray-50 rounded-3xl border-2 border-dashed border-gray-200">
-                                        <BookOpen className="mx-auto text-gray-300 mb-2" size={40} />
-                                        <p className="text-gray-500 font-medium">Henüz bir veri bulunmuyor</p>
+                                    <div className="text-center py-10 bg-white rounded-3xl border-2 border-dashed border-slate-200">
+                                        <BookOpen className="mx-auto text-slate-200 mb-2" size={40} />
+                                        <p className="text-slate-400 font-bold">Henüz bir veri bulunmuyor</p>
                                     </div>
                                 ) : (
                                     <div className="space-y-3">
                                         {getStudentHistory(selectedStudent.id).map((t, i) => (
-                                            <div key={i} className="flex items-center justify-between p-4 bg-white border border-gray-100 rounded-2xl hover:border-indigo-200 hover:shadow-sm transition-all group">
-                                                <div className="flex items-center gap-4">
-                                                    <div className="w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+                                            <div key={i} className="flex items-center justify-between p-5 bg-white border border-slate-100 rounded-3xl hover:border-cyan-100 hover:shadow-md transition-all group">
+                                                <div className="flex items-center gap-5">
+                                                    <div className="w-12 h-12 bg-cyan-50 rounded-2xl flex items-center justify-center text-cyan-600 group-hover:bg-cyan-500 group-hover:text-white transition-all shadow-inner">
                                                         <BookOpen size={20} />
                                                     </div>
                                                     <div>
-                                                        <p className="font-bold text-gray-900">{t.book.title}</p>
-                                                        <p className="text-xs text-gray-500 italic">{t.book.author} • {new Date(t.issueDate).toLocaleDateString('tr-TR')}</p>
+                                                        <p className="font-bold text-slate-900 text-lg">{t.book.title}</p>
+                                                        <p className="text-xs text-slate-500 font-bold uppercase tracking-wide">{t.book.author} • {new Date(t.issueDate).toLocaleDateString('tr-TR')}</p>
                                                     </div>
                                                 </div>
-                                                <div className={`${t.isReturned ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'} px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter`}>
+                                                <div className={`${t.isReturned ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-amber-50 text-amber-600 border border-amber-100'} px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-sm`}>
                                                     {t.isReturned ? 'TAMAMLANDI' : 'OKUYOR'}
                                                 </div>
                                             </div>
@@ -468,10 +469,10 @@ export const Reports: React.FC = () => {
                             </div>
                         </div>
 
-                        <div className="p-8 bg-gray-50 border-t flex justify-end gap-3 shrink-0">
+                        <div className="p-6 bg-white border-t border-slate-100 flex justify-end gap-3 shrink-0">
                             <button
                                 onClick={() => setSelectedStudent(null)}
-                                className="px-8 py-3 bg-indigo-600 text-white rounded-2xl font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100 flex items-center gap-2"
+                                className="px-8 py-4 bg-cyan-600 text-white rounded-2xl font-black uppercase tracking-widest text-sm hover:bg-cyan-700 transition-all shadow-lg shadow-cyan-200 flex items-center gap-2"
                             >
                                 Kapat
                             </button>

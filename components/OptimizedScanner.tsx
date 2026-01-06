@@ -161,71 +161,77 @@ export const OptimizedScanner: React.FC<OptimizedScannerProps> = ({ onComplete, 
             {/* Header / Top Bar */}
             <div className="w-full text-white flex justify-between items-center mb-4">
                 <h2 className="text-lg font-bold flex items-center gap-2">
-                    {scanState === 'SCAN_STUDENT' ? <User className="text-yellow-400" /> : <Book className="text-green-400" />}
+                    {scanState === 'SCAN_STUDENT' ? <User className="text-cyan-400" /> : <Book className="text-emerald-400" />}
                     {scanState === 'SCAN_STUDENT' ? 'Öğrenci Kartını Okutun' : (isReturnOnly ? 'İade Edilecek Kitapları Okutun' : 'Kitapları Okutun')}
                 </h2>
-                <button onClick={onCancel} className="p-2 bg-gray-800 rounded-full hover:bg-gray-700">
+                <button onClick={onCancel} className="p-2 bg-slate-800 rounded-full hover:bg-slate-700">
                     <X size={24} />
                 </button>
             </div>
 
             {/* Scanner Viewport */}
-            <div className="relative w-full flex-grow flex items-center justify-center bg-black overflow-hidden rounded-xl border-2 border-gray-700">
+            <div className="relative w-full flex-grow flex items-center justify-center bg-black overflow-hidden rounded-3xl border-2 border-slate-700">
                 <div id="optimized-reader" className="w-full h-full object-cover"></div>
 
                 {/* Overlay Target Box */}
                 <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-                    <div className={`w-64 h-64 border-4 rounded-3xl opacity-50 ${scanState === 'SCAN_STUDENT' ? 'border-yellow-400' : 'border-green-400'}`}></div>
+                    <div className={`w-72 h-72 border-4 rounded-3xl opacity-60 ${scanState === 'SCAN_STUDENT' ? 'border-cyan-400' : 'border-emerald-400'}`}>
+                        {/* Corner accents */}
+                        <div className={`absolute top-0 left-0 w-6 h-6 border-t-4 border-l-4 -mt-1 -ml-1 ${scanState === 'SCAN_STUDENT' ? 'border-cyan-400' : 'border-emerald-400'}`}></div>
+                        <div className={`absolute top-0 right-0 w-6 h-6 border-t-4 border-r-4 -mt-1 -mr-1 ${scanState === 'SCAN_STUDENT' ? 'border-cyan-400' : 'border-emerald-400'}`}></div>
+                        <div className={`absolute bottom-0 left-0 w-6 h-6 border-b-4 border-l-4 -mb-1 -ml-1 ${scanState === 'SCAN_STUDENT' ? 'border-cyan-400' : 'border-emerald-400'}`}></div>
+                        <div className={`absolute bottom-0 right-0 w-6 h-6 border-b-4 border-r-4 -mb-1 -mr-1 ${scanState === 'SCAN_STUDENT' ? 'border-cyan-400' : 'border-emerald-400'}`}></div>
+                    </div>
                 </div>
 
                 {/* Feedback Overlay */}
                 {showFeedback && (
-                    <div className={`absolute inset-0 z-10 flex items-center justify-center bg-black/70 animated-fade-in`}>
-                        <div className={`text-black p-8 rounded-3xl flex flex-col items-center animate-bounce-in shadow-2xl ${feedback?.type === 'success' ? 'bg-white' : 'bg-red-50 border-4 border-red-500'}`}>
+                    <div className={`absolute inset-0 z-10 flex items-center justify-center bg-black/70 animated-fade-in backdrop-blur-sm`}>
+                        <div className={`text-black p-8 rounded-[2rem] flex flex-col items-center animate-bounce-in shadow-2xl ${feedback?.type === 'success' ? 'bg-white' : 'bg-rose-50 border-4 border-rose-500'}`}>
                             {feedback?.type === 'success' ? (
-                                <CheckCircle size={64} className="text-green-500 mb-4" />
+                                <CheckCircle size={64} className="text-emerald-500 mb-4" />
                             ) : (
-                                <AlertCircle size={64} className="text-red-500 mb-4 animate-pulse" />
+                                <AlertCircle size={64} className="text-rose-500 mb-4 animate-pulse" />
                             )}
                             <p className="text-2xl font-black mb-1">{lastScanned}</p>
-                            <p className={`text-lg font-bold ${feedback?.type === 'success' ? 'text-gray-500' : 'text-red-600'}`}>{feedback?.message}</p>
+                            <p className={`text-lg font-bold ${feedback?.type === 'success' ? 'text-slate-500' : 'text-rose-600'}`}>{feedback?.message}</p>
                         </div>
                     </div>
                 )}
             </div>
 
             {/* Bottom Controls / Info */}
-            <div className="w-full mt-4 space-y-3">
+            <div className="w-full mt-6 space-y-4">
 
                 {/* Status Info */}
-                <div className="bg-gray-900 text-white p-4 rounded-xl flex items-center justify-between">
+                <div className="bg-slate-900 border border-slate-700 text-white p-5 rounded-2xl flex items-center justify-between shadow-lg">
                     {!isReturnOnly && (
                         <>
-                            <div className="flex items-center gap-3">
-                                <div className={`p-2 rounded-lg ${studentId ? 'bg-green-600' : 'bg-gray-700'}`}>
-                                    <User size={20} />
+                            <div className="flex items-center gap-4">
+                                <div className={`p-3 rounded-xl ${studentId ? 'bg-cyan-600' : 'bg-slate-800'}`}>
+                                    <User size={24} />
                                 </div>
                                 <div>
-                                    <p className="text-xs text-gray-400">Aktif Öğrenci</p>
-                                    <p className="font-mono font-bold">{studentId || 'Bekleniyor...'}</p>
+                                    <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">Aktif Öğrenci</p>
+                                    <p className="font-mono font-bold text-lg">{studentId || 'Bekleniyor...'}</p>
                                 </div>
                             </div>
-                            <div className="h-8 w-px bg-gray-700"></div>
+                            <div className="h-10 w-px bg-slate-700"></div>
                         </>
                     )}
-                    <div className="flex items-center gap-3 flex-grow justify-center">
-                        <div className={`p-2 rounded-lg ${books.length > 0 ? (isReturnOnly ? 'bg-orange-600' : 'bg-blue-600') : 'bg-gray-700'}`}>
-                            <Book size={20} />
+                    <div className="flex items-center gap-4 flex-grow justify-center">
+                        <div className={`p-3 rounded-xl ${books.length > 0 ? 'bg-emerald-600' : 'bg-slate-800'}`}>
+                            <Book size={24} />
                         </div>
                         <div>
-                            <p className="text-xs text-gray-400">{isReturnOnly ? 'Toplanacak Kitap' : 'Kitap Sayısı'}</p>
-                            <p className="font-mono font-bold text-center">{books.length}</p>
+                            <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">{isReturnOnly ? 'Toplanacak Kitap' : 'Kitap Sayısı'}</p>
+                            <p className="font-mono font-bold text-lg text-center">{books.length}</p>
                         </div>
                     </div>
                 </div>
 
                 {/* Action Buttons */}
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 gap-4">
                     {scanState === 'SCAN_BOOKS' && (
                         <button
                             onClick={() => {
@@ -233,9 +239,9 @@ export const OptimizedScanner: React.FC<OptimizedScannerProps> = ({ onComplete, 
                                 setStudentId(null);
                                 setBooks([]);
                             }}
-                            className="flex items-center justify-center gap-2 py-3 px-4 bg-gray-800 text-white rounded-xl font-semibold hover:bg-gray-700 active:scale-95 transition-transform"
+                            className="flex items-center justify-center gap-2 py-4 px-4 bg-slate-800 text-white rounded-2xl font-bold uppercase tracking-wide hover:bg-slate-700 active:scale-95 transition-transform"
                         >
-                            <RotateCcw size={18} />
+                            <RotateCcw size={20} />
                             <span>Sıfırla</span>
                         </button>
                     )}
@@ -243,9 +249,9 @@ export const OptimizedScanner: React.FC<OptimizedScannerProps> = ({ onComplete, 
                     <button
                         onClick={() => (isReturnOnly ? books.length > 0 : (studentId && books.length > 0)) ? onComplete(studentId, books) : null}
                         disabled={isReturnOnly ? books.length === 0 : (!studentId || books.length === 0)}
-                        className={`col-span-${(scanState === 'SCAN_STUDENT' || isReturnOnly) ? '2' : '1'} flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-bold text-lg shadow-lg active:scale-95 transition-all ${(isReturnOnly ? books.length > 0 : (studentId && books.length > 0))
-                            ? 'bg-green-500 hover:bg-green-600 text-white'
-                            : 'bg-gray-800 text-gray-500 cursor-not-allowed'
+                        className={`col-span-${(scanState === 'SCAN_STUDENT' || isReturnOnly) ? '2' : '1'} flex items-center justify-center gap-2 py-4 px-4 rounded-2xl font-black uppercase tracking-wider text-base shadow-lg active:scale-95 transition-all ${(isReturnOnly ? books.length > 0 : (studentId && books.length > 0))
+                            ? 'bg-emerald-500 hover:bg-emerald-600 text-white shadow-emerald-500/20'
+                            : 'bg-slate-800 text-slate-500 cursor-not-allowed'
                             }`}
                     >
                         <Save size={20} />
@@ -254,9 +260,9 @@ export const OptimizedScanner: React.FC<OptimizedScannerProps> = ({ onComplete, 
                 </div>
 
                 {/* Manual Entry Fallback */}
-                <div className="flex justify-center gap-4">
-                    <button onClick={handleManualStudentInput} className="text-xs text-gray-500 underline">El ile Öğrenci Gir</button>
-                    {studentId && <button onClick={handleManualBookInput} className="text-xs text-gray-500 underline">El ile Kitap Gir</button>}
+                <div className="flex justify-center gap-6">
+                    <button onClick={handleManualStudentInput} className="text-xs font-bold uppercase tracking-widest text-slate-500 hover:text-white transition-colors">El ile Öğrenci Gir</button>
+                    {studentId && <button onClick={handleManualBookInput} className="text-xs font-bold uppercase tracking-widest text-slate-500 hover:text-white transition-colors">El ile Kitap Gir</button>}
                 </div>
 
             </div>

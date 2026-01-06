@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Student } from '../types';
 import { LibraryService } from '../services/firebaseDatabase';
-import { Plus, Printer, Trash2, Search, Book as BookIcon, X, ClipboardList } from 'lucide-react';
+import { Plus, Printer, Trash2, Search, Book as BookIcon, X, ClipboardList, GraduationCap } from 'lucide-react';
 import { QRCodeDisplay } from '../components/QRCodeDisplay';
 
 export const Students: React.FC = () => {
@@ -101,114 +101,144 @@ export const Students: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 no-print">
-        <h2 className="text-2xl font-bold text-gray-800">Öğrenci Veritabanı</h2>
-
-        {/* Search Bar */}
-        <div className="relative w-full md:w-64">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <Search size={18} className="text-gray-400" />
+        <div className="flex items-center gap-3">
+          <div className="p-3 bg-cyan-100 rounded-xl text-cyan-600">
+            <GraduationCap size={24} />
           </div>
-          <input
-            type="text"
-            placeholder="Öğrenci ara..."
-            className="pl-10 block w-full rounded-lg border-gray-300 border py-2 px-4 focus:ring-indigo-500 focus:border-indigo-500"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+          <div>
+            <h2 className="text-2xl font-black text-slate-800 uppercase tracking-tight">Öğrenci Veritabanı</h2>
+            <p className="text-xs text-slate-500 font-bold uppercase tracking-widest">Kütüphane Üyeleri</p>
+          </div>
         </div>
 
-        <div className="flex space-x-3 w-full md:w-auto">
-          <button
-            onClick={handlePrint}
-            className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 flex items-center justify-center space-x-2 flex-1 md:flex-none"
-          >
-            <Printer size={18} />
-            <span>Kart Yazdır</span>
-          </button>
-          <button
-            onClick={() => setIsAdding(!isAdding)}
-            className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 flex items-center justify-center space-x-2 flex-1 md:flex-none"
-          >
-            <Plus size={18} />
-            <span>Ekle</span>
-          </button>
+        <div className="flex flex-col md:flex-row gap-3 w-full md:w-auto items-stretch md:items-center">
+          {/* Search Bar */}
+          <div className="relative group w-full md:w-64">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Search size={18} className="text-slate-400 group-focus-within:text-cyan-500 transition-colors" />
+            </div>
+            <input
+              type="text"
+              placeholder="Öğrenci ara..."
+              className="pl-10 block w-full rounded-xl border-2 border-slate-200 bg-white py-2.5 px-4 font-bold text-slate-700 placeholder:text-slate-400 focus:border-cyan-500 focus:ring-0 transition-all outline-none"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+
+          <div className="flex gap-2">
+            <button
+              onClick={handlePrint}
+              className="bg-slate-100 text-slate-600 px-4 py-2.5 rounded-xl hover:bg-slate-200 font-bold text-sm uppercase tracking-wide flex items-center justify-center gap-2 transition-all flex-1 md:flex-none"
+            >
+              <Printer size={18} />
+              <span className="hidden lg:inline">Kart Yazdır</span>
+            </button>
+            <button
+              onClick={() => setIsAdding(!isAdding)}
+              className="bg-cyan-600 text-white px-6 py-2.5 rounded-xl hover:bg-cyan-700 font-bold text-sm uppercase tracking-wide flex items-center justify-center gap-2 shadow-lg shadow-cyan-600/20 transition-all flex-1 md:flex-none"
+            >
+              <Plus size={18} />
+              <span>Ekle</span>
+            </button>
+          </div>
         </div>
       </div>
 
       {/* Add Form */}
       {isAdding && (
-        <div className="bg-white p-6 rounded-xl shadow-md border border-indigo-100 no-print">
-          <h3 className="text-lg font-semibold mb-4">Yeni Öğrenci Kaydet</h3>
-          <form onSubmit={handleAdd} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <input
-              placeholder="Ad Soyad"
-              className="border p-2 rounded"
-              value={newStudent.name}
-              onChange={e => setNewStudent({ ...newStudent, name: e.target.value })}
-              required
-            />
-            <input
-              placeholder="Öğrenci No (ID)"
-              className="border p-2 rounded"
-              value={newStudent.studentNumber}
-              onChange={e => setNewStudent({ ...newStudent, studentNumber: e.target.value })}
-              required
-            />
-            <input
-              placeholder="Email"
-              type="email"
-              className="border p-2 rounded"
-              value={newStudent.email}
-              onChange={e => setNewStudent({ ...newStudent, email: e.target.value })}
-            />
-            <input
-              placeholder="Sınıf / Şube"
-              className="border p-2 rounded"
-              value={newStudent.grade}
-              onChange={e => setNewStudent({ ...newStudent, grade: e.target.value })}
-            />
-            <button type="submit" className="col-span-2 bg-indigo-600 text-white p-2 rounded hover:bg-indigo-700">Öğrenciyi Kaydet</button>
+        <div className="bg-white p-8 rounded-[2rem] shadow-xl shadow-slate-200/50 border border-slate-100 no-print animate-soft-fade">
+          <h3 className="text-lg font-black text-slate-800 uppercase tracking-tight mb-6 flex items-center gap-2">
+            <div className="w-1 h-6 bg-cyan-500 rounded-full" />
+            Yeni Öğrenci Kaydet
+          </h3>
+          <form onSubmit={handleAdd} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-1">
+              <label className="text-[10px] uppercase tracking-widest font-black text-slate-400 ml-1">Ad Soyad</label>
+              <input
+                placeholder="Örn: Ahmet Yılmaz"
+                className="w-full bg-slate-50 border-2 border-slate-100 rounded-xl p-3 font-bold text-slate-700 outline-none focus:border-cyan-500 transition-all"
+                value={newStudent.name}
+                onChange={e => setNewStudent({ ...newStudent, name: e.target.value })}
+                required
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-[10px] uppercase tracking-widest font-black text-slate-400 ml-1">Öğrenci No (ID)</label>
+              <input
+                placeholder="Örn: 123"
+                className="w-full bg-slate-50 border-2 border-slate-100 rounded-xl p-3 font-bold text-slate-700 outline-none focus:border-cyan-500 transition-all"
+                value={newStudent.studentNumber}
+                onChange={e => setNewStudent({ ...newStudent, studentNumber: e.target.value })}
+                required
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-[10px] uppercase tracking-widest font-black text-slate-400 ml-1">Email (İsteğe Bağlı)</label>
+              <input
+                placeholder="ogrenci@okul.com"
+                type="email"
+                className="w-full bg-slate-50 border-2 border-slate-100 rounded-xl p-3 font-bold text-slate-700 outline-none focus:border-cyan-500 transition-all"
+                value={newStudent.email}
+                onChange={e => setNewStudent({ ...newStudent, email: e.target.value })}
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-[10px] uppercase tracking-widest font-black text-slate-400 ml-1">Sınıf / Şube</label>
+              <input
+                placeholder="Örn: 10-A"
+                className="w-full bg-slate-50 border-2 border-slate-100 rounded-xl p-3 font-bold text-slate-700 outline-none focus:border-cyan-500 transition-all"
+                value={newStudent.grade}
+                onChange={e => setNewStudent({ ...newStudent, grade: e.target.value })}
+              />
+            </div>
+            <button type="submit" className="md:col-span-2 bg-cyan-600 text-white rounded-xl py-4 font-black text-sm uppercase tracking-widest hover:bg-cyan-700 shadow-lg shadow-cyan-600/20 active:scale-[0.98] transition-all">Öğrenciyi Kaydet</button>
           </form>
         </div>
       )}
 
       {/* Student List - Desktop Table */}
-      <div className="hidden md:block bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden no-print">
+      <div className="hidden md:block bg-white rounded-[2.5rem] shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden no-print">
         <table className="w-full text-left">
-          <thead className="bg-gray-50">
+          <thead className="bg-slate-50/50">
             <tr>
-              <th className="px-6 py-3 text-sm font-medium text-gray-500">İsim</th>
-              <th className="px-6 py-3 text-sm font-medium text-gray-500">Öğrenci No</th>
-              <th className="px-6 py-3 text-sm font-medium text-gray-500">Sınıf</th>
-              <th className="px-6 py-3 text-sm font-medium text-gray-500">Geçmiş</th>
-              <th className="px-6 py-3 text-sm font-medium text-gray-500 text-right">İşlem</th>
+              <th className="px-8 py-5 text-[11px] font-black text-slate-400 uppercase tracking-widest">İsim</th>
+              <th className="px-8 py-5 text-[11px] font-black text-slate-400 uppercase tracking-widest">Öğrenci No</th>
+              <th className="px-8 py-5 text-[11px] font-black text-slate-400 uppercase tracking-widest">Sınıf</th>
+              <th className="px-8 py-5 text-[11px] font-black text-slate-400 uppercase tracking-widest">Geçmiş</th>
+              <th className="px-8 py-5 text-[11px] font-black text-slate-400 uppercase tracking-widest text-right">İşlem</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100">
+          <tbody className="divide-y divide-slate-50">
             {filteredStudents.length === 0 ? (
-              <tr><td colSpan={5} className="text-center py-6 text-gray-400">Öğrenci bulunamadı.</td></tr>
+              <tr><td colSpan={5} className="text-center py-12 text-slate-400 font-bold">Öğrenci bulunamadı.</td></tr>
             ) : filteredStudents.map(student => (
-              <tr key={student.id} className="hover:bg-gray-50 transition-colors">
-                <td className="px-6 py-4">
+              <tr key={student.id} className="hover:bg-slate-50 transition-colors group">
+                <td className="px-8 py-4">
                   <button
                     onClick={() => handleShowHistory(student)}
-                    className="font-bold text-indigo-600 hover:text-indigo-800 hover:underline text-left"
+                    className="font-bold text-slate-800 hover:text-cyan-600 hover:underline text-left text-lg transition-colors"
                   >
                     {student.name}
                   </button>
                 </td>
-                <td className="px-6 py-4 text-gray-500 font-mono">{student.studentNumber}</td>
-                <td className="px-6 py-4">{student.grade}</td>
-                <td className="px-6 py-4 text-sm text-gray-500">
-                  {student.readingHistory.length} kitap okudu
+                <td className="px-8 py-4 text-slate-500 font-mono font-medium">{student.studentNumber}</td>
+                <td className="px-8 py-4">
+                  <span className="text-xs font-bold text-slate-600 bg-slate-100 px-2 py-1 rounded-lg border border-slate-200">{student.grade}</span>
                 </td>
-                <td className="px-6 py-4 text-right">
+                <td className="px-8 py-4 text-sm font-bold text-slate-500">
+                  <div className="flex items-center gap-2">
+                    <BookIcon size={16} className="text-cyan-400" />
+                    {student.readingHistory.length} Kitap
+                  </div>
+                </td>
+                <td className="px-8 py-4 text-right">
                   <button
                     onClick={() => handleDelete(student.id)}
-                    className="text-red-400 hover:text-red-600 p-1 rounded-full hover:bg-red-50 transition-colors"
+                    className="text-slate-400 hover:text-rose-600 p-2 rounded-xl hover:bg-rose-50 transition-all"
                     title="Öğrenciyi Sil"
                   >
-                    <Trash2 size={16} />
+                    <Trash2 size={18} />
                   </button>
                 </td>
               </tr>
@@ -220,30 +250,31 @@ export const Students: React.FC = () => {
       {/* Student List - Mobile Cards */}
       <div className="md:hidden space-y-4 no-print">
         {filteredStudents.length === 0 ? (
-          <div className="bg-white p-6 rounded-xl text-center text-gray-400 border border-gray-200">Öğrenci bulunamadı.</div>
+          <div className="bg-white p-8 rounded-2xl text-center text-slate-400 font-bold border border-slate-100">Öğrenci bulunamadı.</div>
         ) : filteredStudents.map(student => (
-          <div key={student.id} className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex justify-between items-start">
+          <div key={student.id} className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex justify-between items-start">
             <div className="space-y-1">
               <button
                 onClick={() => handleShowHistory(student)}
-                className="font-bold text-indigo-600 text-left"
+                className="font-bold text-slate-900 text-lg hover:text-cyan-600 text-left transition-colors"
               >
                 {student.name}
               </button>
-              <p className="text-sm text-gray-500 font-mono">{student.studentNumber}</p>
-              <div className="flex items-center gap-2 mt-2">
-                <span className="text-[10px] bg-gray-100 px-2 py-0.5 rounded text-gray-600 font-bold uppercase">{student.grade}</span>
-                <span className="text-[10px] bg-blue-50 px-2 py-0.5 rounded text-blue-600 font-bold">
+              <p className="text-sm text-slate-500 font-mono">{student.studentNumber}</p>
+              <div className="flex items-center gap-2 mt-3">
+                <span className="text-[10px] bg-slate-100 px-2 py-1 rounded border border-slate-200 text-slate-600 font-bold uppercase">{student.grade}</span>
+                <span className="text-[10px] bg-cyan-50 px-2 py-1 rounded text-cyan-600 font-bold flex items-center gap-1">
+                  <BookIcon size={12} />
                   {student.readingHistory.length} Kitap
                 </span>
               </div>
             </div>
             <button
               onClick={() => handleDelete(student.id)}
-              className="text-red-400 hover:text-red-600 p-2 rounded-lg bg-red-50 transition-colors"
+              className="text-slate-400 hover:text-rose-600 p-2 rounded-xl bg-slate-50 hover:bg-rose-50 transition-colors"
               title="Öğrenciyi Sil"
             >
-              <Trash2 size={18} />
+              <Trash2 size={20} />
             </button>
           </div>
         ))}
@@ -251,64 +282,67 @@ export const Students: React.FC = () => {
 
       {/* Student Reading History Modal */}
       {selectedStudent && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in no-print">
-          <div className="bg-white w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden animate-soft-fade max-h-[90vh] flex flex-col">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-md animate-fade-in no-print">
+          <div className="bg-white w-full max-w-2xl rounded-[2rem] shadow-2xl overflow-hidden animate-soft-fade max-h-[90vh] flex flex-col border border-white/20">
             {/* Modal Header */}
-            <div className="bg-indigo-600 p-6 text-white flex justify-between items-center shrink-0">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center">
-                  <ClipboardList size={24} />
+            <div className="bg-cyan-600 p-8 text-white flex justify-between items-center shrink-0 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+              <div className="flex items-center gap-5 relative z-10">
+                <div className="w-14 h-14 bg-white/20 rounded-2xl backdrop-blur-sm flex items-center justify-center shadow-inner border border-white/10">
+                  <ClipboardList size={28} className="text-white" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold">{selectedStudent.name}</h3>
-                  <p className="text-indigo-100 text-sm">Okuma Geçmişi Detayı</p>
+                  <h3 className="text-2xl font-black tracking-tight">{selectedStudent.name}</h3>
+                  <p className="text-cyan-100 text-sm font-medium">Okuma Geçmişi Detayı</p>
                 </div>
               </div>
-              <button onClick={() => setSelectedStudent(null)} className="p-2 hover:bg-white/10 rounded-full transition-colors">
+              <button onClick={() => setSelectedStudent(null)} className="p-2 hover:bg-white/20 rounded-xl transition-colors relative z-10">
                 <X size={24} />
               </button>
             </div>
 
             {/* Modal Content */}
-            <div className="p-6 overflow-y-auto flex-grow">
+            <div className="p-8 overflow-y-auto flex-grow bg-slate-50">
               {isLoadingHistory ? (
-                <div className="flex flex-col items-center justify-center py-12 text-gray-400">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mb-4"></div>
-                  <p>Geçmiş yükleniyor...</p>
+                <div className="flex flex-col items-center justify-center py-12 text-slate-400">
+                  <div className="animate-spin rounded-full h-10 w-10 border-b-4 border-cyan-500 mb-4"></div>
+                  <p className="font-bold">Geçmiş yükleniyor...</p>
                 </div>
               ) : studentHistory.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-12 text-gray-400 space-y-4">
-                  <BookIcon size={48} className="opacity-20" />
-                  <p className="text-lg">Bu öğrenci henüz hiç kitap okumamış.</p>
+                <div className="flex flex-col items-center justify-center py-12 text-slate-400 space-y-4">
+                  <div className="p-6 bg-slate-100 rounded-full border border-slate-200">
+                    <BookIcon size={48} className="opacity-40" />
+                  </div>
+                  <p className="text-lg font-bold">Bu öğrenci henüz hiç kitap okumamış.</p>
                 </div>
               ) : (
-                <div className="space-y-4">
-                  <h4 className="font-bold text-gray-700 flex items-center gap-2">
-                    <BookIcon size={18} className="text-indigo-500" />
+                <div className="space-y-6">
+                  <h4 className="font-bold text-slate-400 uppercase tracking-widest text-xs flex items-center gap-2">
+                    <BookIcon size={14} className="text-cyan-500" />
                     Toplam {studentHistory.length} Kitap
                   </h4>
                   <div className="grid gap-3">
                     {studentHistory.map((book, i) => (
-                      <div key={i} className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100 hover:border-indigo-100 transition-all group">
-                        <div className="flex items-center gap-4">
-                          <div className="w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center text-indigo-500 group-hover:bg-indigo-500 group-hover:text-white transition-colors">
-                            <BookIcon size={18} />
+                      <div key={i} className="flex items-center justify-between p-5 bg-white rounded-2xl shadow-sm border border-slate-100 hover:shadow-md hover:border-cyan-100 transition-all group">
+                        <div className="flex items-center gap-5">
+                          <div className="w-12 h-12 bg-slate-50 rounded-xl flex items-center justify-center text-slate-400 group-hover:bg-cyan-500 group-hover:text-white transition-all shadow-inner">
+                            <BookIcon size={20} />
                           </div>
                           <div>
-                            <p className="font-bold text-gray-900 leading-tight">{book.title}</p>
-                            <p className="text-sm text-gray-500">{book.author}</p>
+                            <p className="font-bold text-slate-800 leading-tight text-lg">{book.title}</p>
+                            <p className="text-sm text-slate-500 font-medium">{book.author}</p>
                           </div>
                         </div>
                         <div className="flex items-center gap-3">
-                          <span className="px-3 py-1 bg-indigo-50 text-indigo-600 rounded-full text-xs font-bold uppercase tracking-wider hidden sm:inline-block">
+                          <span className="px-3 py-1 bg-cyan-50 text-cyan-600 rounded-lg text-[10px] font-black uppercase tracking-wider hidden sm:inline-block border border-cyan-100">
                             {book.category}
                           </span>
                           <button
                             onClick={() => handleRemoveBookFromHistory(book.id)}
-                            className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors"
+                            className="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-colors"
                             title="Geçmişten Sil"
                           >
-                            <Trash2 size={18} />
+                            <Trash2 size={20} />
                           </button>
                         </div>
                       </div>
@@ -319,10 +353,10 @@ export const Students: React.FC = () => {
             </div>
 
             {/* Modal Footer */}
-            <div className="p-6 bg-gray-50 border-t flex justify-end shrink-0">
+            <div className="p-6 bg-white border-t border-slate-100 flex justify-end shrink-0">
               <button
                 onClick={() => setSelectedStudent(null)}
-                className="px-6 py-2 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-100"
+                className="px-8 py-3 bg-slate-100 text-slate-600 hover:bg-slate-200 rounded-xl font-bold transition-colors uppercase tracking-wide text-sm"
               >
                 Kapat
               </button>

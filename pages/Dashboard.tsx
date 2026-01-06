@@ -34,73 +34,86 @@ export const Dashboard: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-gray-800">Kütüphane Paneli</h2>
-        <button onClick={fetchLoans} className="text-sm text-indigo-600 hover:text-indigo-800">Verileri Yenile</button>
+        <h2 className="text-2xl font-black text-slate-800 uppercase tracking-tight">Kütüphane Paneli</h2>
+        <button onClick={fetchLoans} className="text-sm font-bold text-cyan-600 hover:text-cyan-700 uppercase tracking-widest transition-colors">
+          Verileri Yenile
+        </button>
       </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-          <div className="flex items-center justify-between">
+        <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 relative overflow-hidden group hover:shadow-md transition-all">
+          <div className="flex items-center justify-between relative z-10">
             <div>
-              <p className="text-sm text-gray-500 font-medium">Aktif Ödünçler</p>
-              <h3 className="text-3xl font-bold text-gray-800 mt-1">{loans.length}</h3>
+              <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Aktif Ödünçler</p>
+              <h3 className="text-4xl font-black text-slate-900 mt-1">{loans.length}</h3>
             </div>
-            <div className="bg-blue-50 p-3 rounded-lg text-blue-600">
-              <Clock size={24} />
+            <div className="bg-cyan-50 p-4 rounded-2xl text-cyan-600 group-hover:scale-110 transition-transform">
+              <Clock size={28} />
             </div>
           </div>
+          <div className="absolute -bottom-4 -right-4 w-24 h-24 bg-cyan-50/50 rounded-full blur-2xl" />
         </div>
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-          <div className="flex items-center justify-between">
+
+        <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 relative overflow-hidden group hover:shadow-md transition-all">
+          <div className="flex items-center justify-between relative z-10">
             <div>
-              <p className="text-sm text-gray-500 font-medium">Gecikmiş Kitaplar</p>
-              <h3 className="text-3xl font-bold text-red-600 mt-1">
+              <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Gecikmiş Kitaplar</p>
+              <h3 className="text-4xl font-black text-rose-600 mt-1">
                 {loans.filter(l => isOverdue(l.dueDate)).length}
               </h3>
             </div>
-            <div className="bg-red-50 p-3 rounded-lg text-red-600">
-              <AlertCircle size={24} />
+            <div className="bg-rose-50 p-4 rounded-2xl text-rose-600 group-hover:scale-110 transition-transform">
+              <AlertCircle size={28} />
             </div>
           </div>
+          <div className="absolute -bottom-4 -right-4 w-24 h-24 bg-rose-50/50 rounded-full blur-2xl" />
         </div>
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-          <div className="flex items-center justify-between">
+
+        <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 relative overflow-hidden group hover:shadow-md transition-all">
+          <div className="flex items-center justify-between relative z-10">
             <div>
-              <p className="text-sm text-gray-500 font-medium">Zamanında Teslimler</p>
-              <h3 className="text-3xl font-bold text-green-600 mt-1">
+              <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Zamanında Teslimler</p>
+              <h3 className="text-4xl font-black text-emerald-600 mt-1">
                 {loans.filter(l => !isOverdue(l.dueDate)).length}
               </h3>
             </div>
-            <div className="bg-green-50 p-3 rounded-lg text-green-600">
-              <CheckCircle2 size={24} />
+            <div className="bg-emerald-50 p-4 rounded-2xl text-emerald-600 group-hover:scale-110 transition-transform">
+              <CheckCircle2 size={28} />
             </div>
           </div>
+          <div className="absolute -bottom-4 -right-4 w-24 h-24 bg-emerald-50/50 rounded-full blur-2xl" />
         </div>
       </div>
 
       {/* Main Table */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-100 bg-gray-50">
-          <h3 className="font-semibold text-gray-800">Şu An Ödünçte Olan Kitaplar</h3>
+      <div className="bg-white rounded-[2.5rem] shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden">
+        <div className="px-8 py-6 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
+          <h3 className="text-sm font-black text-slate-700 uppercase tracking-widest">Aktif Ödünç Listesi</h3>
+          <span className="text-[10px] font-bold bg-slate-200 text-slate-600 px-2 py-1 rounded-lg uppercase tracking-tighter">
+            Toplam: {loans.length}
+          </span>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead>
-              <tr className="bg-gray-50 text-gray-500 text-sm border-b border-gray-100">
-                <th className="px-6 py-3 font-medium">Öğrenci</th>
-                <th className="px-6 py-3 font-medium">Kitap Adı</th>
-                <th className="px-6 py-3 font-medium">Veriliş Tarihi</th>
-                <th className="px-6 py-3 font-medium">Teslim Tarihi</th>
-                <th className="px-6 py-3 font-medium">Geçen Gün</th>
-                <th className="px-6 py-3 font-medium">Durum</th>
+              <tr className="bg-slate-50/30 text-slate-400 text-[11px] font-black uppercase tracking-widest border-b border-slate-100">
+                <th className="px-8 py-4">Öğrenci Bilgisi</th>
+                <th className="px-8 py-4">Kitap Detayı</th>
+                <th className="px-8 py-4 text-center">Tarih Aralığı</th>
+                <th className="px-8 py-4 text-center">Durumu</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y divide-slate-50">
               {loans.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-8 text-center text-gray-400">
-                    Şu anda ödünç verilmiş kitap yok.
+                  <td colSpan={4} className="px-8 py-20 text-center">
+                    <div className="flex flex-col items-center gap-4">
+                      <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center text-slate-300">
+                        <Clock size={32} />
+                      </div>
+                      <p className="text-slate-400 font-bold text-sm uppercase tracking-widest">Ödünç verilmiş kitap bulunmuyor</p>
+                    </div>
                   </td>
                 </tr>
               ) : (
@@ -111,29 +124,30 @@ export const Dashboard: React.FC = () => {
                   return (
                     <tr
                       key={loan.id}
-                      className={`transition-colors ${overdue ? 'bg-red-50 hover:bg-red-100' : 'hover:bg-gray-50'}`}
+                      className={`group transition-all hover:bg-slate-50/80 ${overdue ? 'bg-rose-50/30' : ''}`}
                     >
-                      <td className="px-6 py-4">
-                        <div className="font-medium text-gray-900">{loan.student.name}</div>
-                        <div className="text-xs text-gray-500">{loan.student.studentNumber}</div>
+                      <td className="px-8 py-5">
+                        <div className="font-bold text-slate-900 group-hover:text-cyan-600 transition-colors">{loan.student.name}</div>
+                        <div className="text-[11px] font-black text-slate-400 uppercase tracking-widest mt-0.5">{loan.student.studentNumber}</div>
                       </td>
-                      <td className="px-6 py-4">
-                        <div className="text-gray-900">{loan.book.title}</div>
-                        <div className="text-xs text-gray-500">ISBN: {loan.book.isbn}</div>
+                      <td className="px-8 py-5">
+                        <div className="font-bold text-slate-800">{loan.book.title}</div>
+                        <div className="text-[11px] font-medium text-slate-500 mt-0.5">ISBN: {loan.book.isbn}</div>
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-600">
-                        {new Date(loan.issueDate).toLocaleDateString('tr-TR')}
+                      <td className="px-8 py-5">
+                        <div className="flex flex-col items-center justify-center">
+                          <div className="text-xs font-bold text-slate-600">
+                            {new Date(loan.issueDate).toLocaleDateString('tr-TR')} - {new Date(loan.dueDate).toLocaleDateString('tr-TR')}
+                          </div>
+                          <div className="text-[10px] font-black text-slate-400 uppercase tracking-tighter mt-1 bg-slate-100 px-2 py-0.5 rounded-full">
+                            {daysKept} Gündür Okuyor
+                          </div>
+                        </div>
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-600">
-                        {new Date(loan.dueDate).toLocaleDateString('tr-TR')}
-                      </td>
-                      <td className="px-6 py-4 text-sm font-medium">
-                        {daysKept} gün
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${overdue
-                            ? 'bg-red-100 text-red-800 border border-red-200'
-                            : 'bg-green-100 text-green-800 border border-green-200'
+                      <td className="px-8 py-5 text-center">
+                        <span className={`inline-flex items-center px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest ${overdue
+                          ? 'bg-rose-100 text-rose-700 shadow-sm shadow-rose-200'
+                          : 'bg-emerald-100 text-emerald-700 shadow-sm shadow-emerald-200'
                           }`}>
                           {overdue ? 'Gecikmiş' : 'Zamanında'}
                         </span>
