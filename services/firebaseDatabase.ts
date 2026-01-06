@@ -31,6 +31,9 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
+googleProvider.setCustomParameters({
+    prompt: 'select_account'
+});
 
 // Helper to get collection references scoped to a teacher
 // If teacherId is provided (e.g. for ParentView), it uses that.
