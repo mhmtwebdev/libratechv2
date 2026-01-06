@@ -298,6 +298,8 @@ export const Reports: React.FC = () => {
                     <div className="relative w-full md:w-80 no-print group">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-cyan-500 transition-colors" size={18} />
                         <input
+                            id="report-search"
+                            name="report-search"
                             type="text"
                             placeholder="Öğrenci karnesi ara..."
                             className="w-full pl-10 pr-4 py-3 bg-white border-2 border-slate-100 rounded-xl font-bold text-slate-700 placeholder:text-slate-400 focus:border-cyan-500 transition-all outline-none"

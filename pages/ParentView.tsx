@@ -93,6 +93,8 @@ export const ParentView: React.FC = () => {
                         <div className="relative max-w-xl mx-auto mt-6">
                             <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-cyan-700 pointer-events-none" size={24} />
                             <input
+                                id="parent-search"
+                                name="parent-search"
                                 type="text"
                                 placeholder="Öğrenci adı veya numarası giriniz..."
                                 className="w-full pl-16 pr-6 py-5 bg-white text-slate-800 rounded-2xl shadow-xl shadow-cyan-900/20 border-none focus:ring-4 focus:ring-cyan-300/50 transition-all font-bold text-lg outline-none placeholder:text-slate-300"

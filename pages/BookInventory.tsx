@@ -90,6 +90,8 @@ export const BookInventory: React.FC = () => {
               <Search size={18} className="text-slate-400 group-focus-within:text-cyan-500 transition-colors" />
             </div>
             <input
+              id="book-search"
+              name="book-search"
               type="text"
               placeholder="Kitap ara..."
               className="pl-10 block w-full rounded-xl border-2 border-slate-200 bg-white py-2.5 px-4 font-bold text-slate-700 placeholder:text-slate-400 focus:border-cyan-500 focus:ring-0 transition-all outline-none"
@@ -126,8 +128,10 @@ export const BookInventory: React.FC = () => {
           </h3>
           <form onSubmit={handleAdd} className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-1">
-              <label className="text-[10px] uppercase tracking-widest font-black text-slate-400 ml-1">Kitap Adı</label>
+              <label htmlFor="book-title" className="text-[10px] uppercase tracking-widest font-black text-slate-400 ml-1">Kitap Adı</label>
               <input
+                id="book-title"
+                name="book-title"
                 placeholder="Örn: Sefiller"
                 className="w-full bg-slate-50 border-2 border-slate-100 rounded-xl p-3 font-bold text-slate-700 outline-none focus:border-cyan-500 transition-all"
                 value={newBook.title}
@@ -136,8 +140,10 @@ export const BookInventory: React.FC = () => {
               />
             </div>
             <div className="space-y-1">
-              <label className="text-[10px] uppercase tracking-widest font-black text-slate-400 ml-1">Yazar</label>
+              <label htmlFor="book-author" className="text-[10px] uppercase tracking-widest font-black text-slate-400 ml-1">Yazar</label>
               <input
+                id="book-author"
+                name="book-author"
                 placeholder="Örn: Victor Hugo"
                 className="w-full bg-slate-50 border-2 border-slate-100 rounded-xl p-3 font-bold text-slate-700 outline-none focus:border-cyan-500 transition-all"
                 value={newBook.author}
@@ -146,11 +152,13 @@ export const BookInventory: React.FC = () => {
               />
             </div>
             <div className="space-y-1 md:col-span-1">
-              <label className="text-[10px] uppercase tracking-widest font-black text-slate-400 ml-1">ISBN / Barkod</label>
+              <label htmlFor="book-isbn" className="text-[10px] uppercase tracking-widest font-black text-slate-400 ml-1">ISBN / Barkod</label>
               <div className="flex gap-2">
                 <div className="relative flex-1 group">
                   <QrCode className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-cyan-500 transition-colors" size={20} />
                   <input
+                    id="book-isbn"
+                    name="book-isbn"
                     placeholder="ISBN Numarası"
                     className="w-full pl-10 bg-slate-50 border-2 border-slate-100 rounded-xl p-3 font-mono font-bold text-slate-700 outline-none focus:border-cyan-500 transition-all"
                     value={newBook.isbn}
@@ -162,8 +170,10 @@ export const BookInventory: React.FC = () => {
               </div>
             </div>
             <div className="space-y-1">
-              <label className="text-[10px] uppercase tracking-widest font-black text-slate-400 ml-1">Kategori</label>
+              <label htmlFor="book-category" className="text-[10px] uppercase tracking-widest font-black text-slate-400 ml-1">Kategori</label>
               <input
+                id="book-category"
+                name="book-category"
                 placeholder="Örn: Klasikler"
                 className="w-full bg-slate-50 border-2 border-slate-100 rounded-xl p-3 font-bold text-slate-700 outline-none focus:border-cyan-500 transition-all"
                 value={newBook.category}

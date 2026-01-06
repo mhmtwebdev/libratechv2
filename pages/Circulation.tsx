@@ -74,9 +74,11 @@ export const Circulation: React.FC = () => {
             {mode === 'ISSUE' && (
               <div className="mt-10 space-y-6 animate-soft-fade">
                 <div className="space-y-2">
-                  <label className="text-[10px] uppercase font-black text-slate-400 tracking-widest pl-1">Ödünç Süresi</label>
+                  <label htmlFor="issue-duration" className="text-[10px] uppercase font-black text-slate-400 tracking-widest pl-1">Ödünç Süresi</label>
                   <div className='relative'>
                     <select
+                      id="issue-duration"
+                      name="issue-duration"
                       value={duration}
                       onClick={(e) => e.stopPropagation()}
                       onChange={(e) => setDuration(Number(e.target.value))}
@@ -147,12 +149,12 @@ export const Circulation: React.FC = () => {
       {/* Feedback Messages */}
       {feedback && (
         <div className={`p-6 rounded-[2rem] flex items-center space-x-5 border-2 animate-soft-fade ${feedback.type === 'error' ? 'bg-rose-50 text-rose-800 border-rose-100' :
-            feedback.type === 'warning' ? 'bg-amber-50 text-amber-800 border-amber-100' :
-              'bg-emerald-50 text-emerald-800 border-emerald-100'
+          feedback.type === 'warning' ? 'bg-amber-50 text-amber-800 border-amber-100' :
+            'bg-emerald-50 text-emerald-800 border-emerald-100'
           }`}>
           <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 ${feedback.type === 'error' ? 'bg-rose-200 text-rose-700' :
-              feedback.type === 'warning' ? 'bg-amber-200 text-amber-700' :
-                'bg-emerald-200 text-emerald-700'
+            feedback.type === 'warning' ? 'bg-amber-200 text-amber-700' :
+              'bg-emerald-200 text-emerald-700'
             }`}>
             {feedback.type === 'error' && <AlertCircle size={28} />}
             {feedback.type === 'warning' && <AlertTriangle size={28} />}

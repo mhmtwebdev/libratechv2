@@ -118,6 +118,8 @@ export const Students: React.FC = () => {
               <Search size={18} className="text-slate-400 group-focus-within:text-cyan-500 transition-colors" />
             </div>
             <input
+              id="student-search"
+              name="student-search"
               type="text"
               placeholder="Öğrenci ara..."
               className="pl-10 block w-full rounded-xl border-2 border-slate-200 bg-white py-2.5 px-4 font-bold text-slate-700 placeholder:text-slate-400 focus:border-cyan-500 focus:ring-0 transition-all outline-none"
@@ -154,8 +156,10 @@ export const Students: React.FC = () => {
           </h3>
           <form onSubmit={handleAdd} className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-1">
-              <label className="text-[10px] uppercase tracking-widest font-black text-slate-400 ml-1">Ad Soyad</label>
+              <label htmlFor="student-name" className="text-[10px] uppercase tracking-widest font-black text-slate-400 ml-1">Ad Soyad</label>
               <input
+                id="student-name"
+                name="student-name"
                 placeholder="Örn: Ahmet Yılmaz"
                 className="w-full bg-slate-50 border-2 border-slate-100 rounded-xl p-3 font-bold text-slate-700 outline-none focus:border-cyan-500 transition-all"
                 value={newStudent.name}
@@ -164,8 +168,10 @@ export const Students: React.FC = () => {
               />
             </div>
             <div className="space-y-1">
-              <label className="text-[10px] uppercase tracking-widest font-black text-slate-400 ml-1">Öğrenci No (ID)</label>
+              <label htmlFor="student-id" className="text-[10px] uppercase tracking-widest font-black text-slate-400 ml-1">Öğrenci No (ID)</label>
               <input
+                id="student-id"
+                name="student-id"
                 placeholder="Örn: 123"
                 className="w-full bg-slate-50 border-2 border-slate-100 rounded-xl p-3 font-bold text-slate-700 outline-none focus:border-cyan-500 transition-all"
                 value={newStudent.studentNumber}
@@ -174,8 +180,10 @@ export const Students: React.FC = () => {
               />
             </div>
             <div className="space-y-1">
-              <label className="text-[10px] uppercase tracking-widest font-black text-slate-400 ml-1">Email (İsteğe Bağlı)</label>
+              <label htmlFor="student-email" className="text-[10px] uppercase tracking-widest font-black text-slate-400 ml-1">Email (İsteğe Bağlı)</label>
               <input
+                id="student-email"
+                name="student-email"
                 placeholder="ogrenci@okul.com"
                 type="email"
                 className="w-full bg-slate-50 border-2 border-slate-100 rounded-xl p-3 font-bold text-slate-700 outline-none focus:border-cyan-500 transition-all"
@@ -184,8 +192,10 @@ export const Students: React.FC = () => {
               />
             </div>
             <div className="space-y-1">
-              <label className="text-[10px] uppercase tracking-widest font-black text-slate-400 ml-1">Sınıf / Şube</label>
+              <label htmlFor="student-grade" className="text-[10px] uppercase tracking-widest font-black text-slate-400 ml-1">Sınıf / Şube</label>
               <input
+                id="student-grade"
+                name="student-grade"
                 placeholder="Örn: 10-A"
                 className="w-full bg-slate-50 border-2 border-slate-100 rounded-xl p-3 font-bold text-slate-700 outline-none focus:border-cyan-500 transition-all"
                 value={newStudent.grade}
