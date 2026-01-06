@@ -180,10 +180,12 @@ export const Login: React.FC<LoginProps> = ({ onLogin }) => {
             )}
             {isRegistering && (
               <div className="space-y-2 group">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">İsim Soyisim</label>
+                <label htmlFor="name" className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">İsim Soyisim</label>
                 <div className="relative">
                   <User className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-cyan-600 transition-colors" size={20} />
                   <input
+                    id="name"
+                    name="name"
                     type="text"
                     required
                     placeholder="Adınız Soyadınız"
@@ -191,16 +193,19 @@ export const Login: React.FC<LoginProps> = ({ onLogin }) => {
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     disabled={loading}
+                    autoComplete="name"
                   />
                 </div>
               </div>
             )}
 
             <div className="space-y-2 group">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">E-Posta Adresi</label>
+              <label htmlFor="email" className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">E-Posta Adresi</label>
               <div className="relative">
                 <Mail className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-cyan-600 transition-colors" size={20} />
                 <input
+                  id="email"
+                  name="email"
                   type="email"
                   required
                   placeholder="ogretmen@okul.com"
@@ -208,15 +213,18 @@ export const Login: React.FC<LoginProps> = ({ onLogin }) => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   disabled={loading}
+                  autoComplete="email"
                 />
               </div>
             </div>
 
             <div className="space-y-2 group">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Parola</label>
+              <label htmlFor="password" className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Parola</label>
               <div className="relative">
                 <Lock className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-cyan-600 transition-colors" size={20} />
                 <input
+                  id="password"
+                  name="password"
                   type={showPassword ? 'text' : 'password'}
                   required
                   placeholder="••••••••"
@@ -224,6 +232,7 @@ export const Login: React.FC<LoginProps> = ({ onLogin }) => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   disabled={loading}
+                  autoComplete="current-password"
                 />
                 <button
                   type="button"
