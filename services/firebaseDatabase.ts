@@ -13,14 +13,14 @@ import {
 } from "firebase/firestore";
 import { Book, BookStatus, Student, Transaction } from '../types';
 
-// Configuration
+// Configuration - LibraTech V2
 const firebaseConfig = {
-    apiKey: "AIzaSyBwlK6cJQdiBuxSzKCeV25VzWtsYD6Wd1I",
-    authDomain: "libratech-db.firebaseapp.com",
-    projectId: "libratech-db",
-    storageBucket: "libratech-db.firebasestorage.app",
-    messagingSenderId: "766487965530",
-    appId: "1:766487965530:web:34ab9cc14f5ff6296e0d63"
+    apiKey: "AIzaSyABqzz-0liy7ouqh90O53YvB6bP4o4DuJI",
+    authDomain: "libratechv2.firebaseapp.com",
+    projectId: "libratechv2",
+    storageBucket: "libratechv2.firebasestorage.app",
+    messagingSenderId: "729755713200",
+    appId: "1:729755713200:web:a7eec17be1fb7928718575"
 };
 
 // Initialize
@@ -102,31 +102,30 @@ export const LibraryService = {
 
     // --- Transactions ---
     getActiveTransactions: async (): Promise<(Transaction & { book: Book, student: Student })[]> => {
-        // In a real app, filtering in memory is okay for small datasets, 
-        // but ideally we query where('isReturned', '==', false)
-        // However, we need to join data which Firestore doesn't do natively.
+        try {
+            const tSnapshot = await getDocs(transactionsRef);
+            const transactions = tSnapshot.docs.map(doc => mapDoc<Transaction>(doc));
 
-        const tSnapshot = await getDocs(transactionsRef);
-        const transactions = tSnapshot.docs.map(doc => mapDoc<Transaction>(doc));
+            const activeTransactions = transactions.filter(t => !t.isReturned);
+            if (activeTransactions.length === 0) return [];
 
-        const activeTransactions = transactions.filter(t => !t.isReturned);
-        if (activeTransactions.length === 0) return [];
+            const [books, students] = await Promise.all([
+                LibraryService.getBooks(),
+                LibraryService.getStudents()
+            ]);
 
-        // Fetch all books and students to join (Optimization: could fetch only needed IDs)
-        // For this size app, fetching all is fine.
-        const [books, students] = await Promise.all([
-            LibraryService.getBooks(),
-            LibraryService.getStudents()
-        ]);
-
-        return activeTransactions
-            .map(t => {
-                const book = books.find(b => b.id === t.bookId);
-                const student = students.find(s => s.id === t.studentId);
-                if (!book || !student) return null;
-                return { ...t, book, student };
-            })
-            .filter((t): t is (Transaction & { book: Book, student: Student }) => t !== null);
+            return activeTransactions
+                .map(t => {
+                    const book = books.find(b => b.id === t.bookId);
+                    const student = students.find(s => s.id === t.studentId);
+                    if (!book || !student) return null;
+                    return { ...t, book, student };
+                })
+                .filter((t): t is (Transaction & { book: Book, student: Student }) => t !== null);
+        } catch (error) {
+            console.error("Error fetching transactions:", error);
+            return [];
+        }
     },
 
     issueBook: async (isbn: string, studentNumber: string, durationDays: number): Promise<{ success: boolean; message: string; warning?: string }> => {
@@ -217,8 +216,35 @@ export const LibraryService = {
     },
 
     resetDatabase: async () => {
-        console.warn("Reset Database functionality is disabled in Remote DB mode for safety.");
-        alert("Bulut veritabanında toplu silme işlemi güvenlik nedeniyle devre dışı bırakılmıştır. Verileri manuel siliniz.");
+        if (!window.confirm("Veritabanını sıfırlamak ve örnek verileri yüklemek istediğinize emin misiniz?")) return;
+
+        try {
+            // Add initial books
+            const initialBooks = [
+                { title: "Sefiller", author: "Victor Hugo", isbn: "9789756123456", category: "Klasik", status: BookStatus.AVAILABLE, addedDate: new Date().toISOString() },
+                { title: "Suç ve Ceza", author: "Fyodor Dostoyevski", isbn: "9789756123457", category: "Klasik", status: BookStatus.AVAILABLE, addedDate: new Date().toISOString() },
+                { title: "Küçük Prens", author: "Antoine de Saint-Exupéry", isbn: "9789756123458", category: "Çocuk", status: BookStatus.AVAILABLE, addedDate: new Date().toISOString() }
+            ];
+
+            // Add initial students
+            const initialStudents = [
+                { name: "Ahmet Yılmaz", studentNumber: "101", readingHistory: [] },
+                { name: "Ayşe Demir", studentNumber: "102", readingHistory: [] }
+            ];
+
+            for (const book of initialBooks) {
+                await addDoc(booksRef, book);
+            }
+            for (const student of initialStudents) {
+                await addDoc(studentsRef, student);
+            }
+
+            alert("Veritabanı başarıyla başlatıldı! Sayfayı yenileyebilirsiniz.");
+            window.location.reload();
+        } catch (error) {
+            console.error("Setup error:", error);
+            alert("Başlatma sırasında hata oluştu. Lütfen Firestore kurallarını kontrol edin.");
+        }
     },
 
     removeBookFromHistory: async (studentId: string, bookId: string): Promise<{ success: boolean; message: string }> => {
