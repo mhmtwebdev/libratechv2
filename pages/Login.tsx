@@ -1,5 +1,11 @@
 import React, { useState } from 'react';
-import { Library, Mail, Lock, User, ArrowRight, Chrome, Eye, EyeOff, Sparkles } from 'lucide-react';
+import { Library, Mail, Lock, User, ArrowRight, Chrome, Eye, EyeOff, Sparkles, AlertCircle } from 'lucide-react';
+import { auth } from '../services/firebaseDatabase';
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  updateProfile
+} from 'firebase/auth';
 
 interface LoginProps {
   onLogin: () => void;
@@ -11,10 +17,54 @@ export const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onLogin();
+    setLoading(true);
+    setError(null);
+
+    try {
+      if (isRegistering) {
+        // Create User
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        // Update Profile with Name
+        if (name) {
+          await updateProfile(userCredential.user, { displayName: name });
+        }
+      } else {
+        // Sign In
+        await signInWithEmailAndPassword(auth, email, password);
+      }
+      onLogin();
+    } catch (err: any) {
+      console.error("Auth error:", err);
+      // Detailed error messages in Turkish
+      switch (err.code) {
+        case 'auth/email-already-in-use':
+          setError('Bu e-posta adresi zaten kullanımda.');
+          break;
+        case 'auth/invalid-email':
+          setError('Geçersiz bir e-posta adresi girdiniz.');
+          break;
+        case 'auth/operation-not-allowed':
+          setError('E-posta/Şifre girişi etkin değil.');
+          break;
+        case 'auth/weak-password':
+          setError('Şifre çok zayıf (en az 6 karakter olmalı).');
+          break;
+        case 'auth/user-not-found':
+        case 'auth/wrong-password':
+        case 'auth/invalid-credential':
+          setError('E-posta veya şifre hatalı.');
+          break;
+        default:
+          setError('Bir hata oluştu: ' + (err.message || 'Lütfen tekrar deneyin.'));
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -88,13 +138,13 @@ export const Login: React.FC<LoginProps> = ({ onLogin }) => {
           {/* Premium Toggle Switch */}
           <div className="p-1.5 bg-slate-100/80 border border-slate-200 rounded-[1.5rem] mb-12 flex relative">
             <button
-              onClick={() => setIsRegistering(false)}
+              onClick={() => { setIsRegistering(false); setError(null); }}
               className={`flex-1 py-3.5 text-xs font-black uppercase tracking-widest rounded-2xl transition-all duration-300 z-10 ${!isRegistering ? 'text-white' : 'text-slate-500 hover:text-slate-800'}`}
             >
               Giriş Yap
             </button>
             <button
-              onClick={() => setIsRegistering(true)}
+              onClick={() => { setIsRegistering(true); setError(null); }}
               className={`flex-1 py-3.5 text-xs font-black uppercase tracking-widest rounded-2xl transition-all duration-300 z-10 ${isRegistering ? 'text-white' : 'text-slate-500 hover:text-slate-800'}`}
             >
               Kayıt Ol
@@ -105,6 +155,12 @@ export const Login: React.FC<LoginProps> = ({ onLogin }) => {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
+            {error && (
+              <div className="p-4 bg-rose-50 border border-rose-100 text-rose-600 rounded-2xl text-xs font-bold flex items-center gap-3 animate-soft-fade">
+                <AlertCircle size={18} />
+                {error}
+              </div>
+            )}
             {isRegistering && (
               <div className="space-y-2 group">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">İsim Soyisim</label>
@@ -114,9 +170,10 @@ export const Login: React.FC<LoginProps> = ({ onLogin }) => {
                     type="text"
                     required
                     placeholder="Adınız Soyadınız"
-                    className="w-full bg-slate-50 border-2 border-slate-100 text-slate-800 pl-14 pr-5 py-4.5 rounded-[1.25rem] focus:border-cyan-500/50 focus:bg-white transition-all font-bold placeholder:text-slate-300 outline-none"
+                    className="w-full bg-slate-50 border-2 border-slate-100 text-slate-800 pl-14 pr-5 py-4.5 rounded-[1.25rem] focus:border-cyan-500/50 focus:bg-white transition-all font-bold placeholder:text-slate-300 outline-none disabled:opacity-50"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
+                    disabled={loading}
                   />
                 </div>
               </div>
@@ -130,9 +187,10 @@ export const Login: React.FC<LoginProps> = ({ onLogin }) => {
                   type="email"
                   required
                   placeholder="ogretmen@okul.com"
-                  className="w-full bg-slate-50 border-2 border-slate-100 text-slate-800 pl-14 pr-5 py-4.5 rounded-[1.25rem] focus:border-cyan-500/50 focus:bg-white transition-all font-bold placeholder:text-slate-300 outline-none"
+                  className="w-full bg-slate-50 border-2 border-slate-100 text-slate-800 pl-14 pr-5 py-4.5 rounded-[1.25rem] focus:border-cyan-500/50 focus:bg-white transition-all font-bold placeholder:text-slate-300 outline-none disabled:opacity-50"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  disabled={loading}
                 />
               </div>
             </div>
@@ -145,14 +203,16 @@ export const Login: React.FC<LoginProps> = ({ onLogin }) => {
                   type={showPassword ? 'text' : 'password'}
                   required
                   placeholder="••••••••"
-                  className="w-full bg-slate-50 border-2 border-slate-100 text-slate-800 pl-14 pr-14 py-4.5 rounded-[1.25rem] focus:border-cyan-500/50 focus:bg-white transition-all font-bold placeholder:text-slate-300 outline-none"
+                  className="w-full bg-slate-50 border-2 border-slate-100 text-slate-800 pl-14 pr-14 py-4.5 rounded-[1.25rem] focus:border-cyan-500/50 focus:bg-white transition-all font-bold placeholder:text-slate-300 outline-none disabled:opacity-50"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  disabled={loading}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-cyan-600 transition-colors"
+                  disabled={loading}
                 >
                   {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
@@ -161,10 +221,17 @@ export const Login: React.FC<LoginProps> = ({ onLogin }) => {
 
             <button
               type="submit"
-              className="w-full py-5 bg-gradient-to-r from-cyan-600 to-cyan-700 hover:from-cyan-500 hover:to-cyan-600 text-white rounded-2xl font-black text-sm uppercase tracking-[0.2em] transition-all shadow-xl shadow-cyan-600/20 flex items-center justify-center gap-4 relative overflow-hidden group active:scale-[0.98]"
+              disabled={loading}
+              className="w-full py-5 bg-gradient-to-r from-cyan-600 to-cyan-700 hover:from-cyan-500 hover:to-cyan-600 text-white rounded-2xl font-black text-sm uppercase tracking-[0.2em] transition-all shadow-xl shadow-cyan-600/20 flex items-center justify-center gap-4 relative overflow-hidden group active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed"
             >
-              {isRegistering ? 'Hesap Oluştur' : 'Giriş Yap'}
-              <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
+              {loading ? (
+                <div className="w-6 h-6 border-4 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : (
+                <>
+                  {isRegistering ? 'Hesap Oluştur' : 'Giriş Yap'}
+                  <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
+                </>
+              )}
             </button>
           </form>
 
@@ -177,7 +244,8 @@ export const Login: React.FC<LoginProps> = ({ onLogin }) => {
 
           <button
             onClick={onLogin}
-            className="w-full h-16 bg-white hover:bg-slate-50 border-2 border-slate-100 text-slate-700 rounded-2xl font-bold text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-4 group shadow-sm hover:shadow-md"
+            disabled={loading}
+            className="w-full h-16 bg-white hover:bg-slate-50 border-2 border-slate-100 text-slate-700 rounded-2xl font-bold text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-4 group shadow-sm hover:shadow-md disabled:opacity-50"
           >
             <div className="p-2 bg-slate-50 rounded-lg group-hover:bg-white transition-colors">
               <Chrome size={22} className="text-cyan-600" />
