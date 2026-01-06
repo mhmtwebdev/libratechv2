@@ -4,7 +4,7 @@ import { Student, Book, Transaction } from '../types';
 import {
     Download, FileText, BarChart3, Users, BookOpen,
     Award, TrendingUp, Calendar, Search, ChevronRight,
-    Printer, Filter, PieChart as PieChartIcon, LogOut
+    Printer, Filter, PieChart as PieChartIcon, LogOut, Share2
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import {
@@ -113,6 +113,12 @@ export const Reports: React.FC = () => {
         .filter(s => s.name.toLowerCase().includes(searchTerm.toLowerCase()) || s.studentNumber.includes(searchTerm))
         .sort((a, b) => (b.readingHistory?.length || 0) - (a.readingHistory?.length || 0));
 
+    const handleShareWithParents = () => {
+        const parentUrl = `${window.location.origin}${window.location.pathname}?view=parent`;
+        navigator.clipboard.writeText(parentUrl);
+        alert("Veli Takip Linki Kopyalandı!\n\nVeliler bu linke tıklayarak şifresiz bir şekilde çocuklarının karnesini sorgulayabilirler.");
+    };
+
     // Get specific student stats for modal
     const getStudentHistory = (studentId: string) => {
         return allTransactions
@@ -132,6 +138,10 @@ export const Reports: React.FC = () => {
                     <button onClick={() => window.print()} className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl shadow-sm hover:bg-gray-50 text-gray-700 transition-all font-semibold no-print">
                         <Printer size={18} />
                         Sayfayı Yazdır
+                    </button>
+                    <button onClick={handleShareWithParents} className="flex items-center gap-2 px-4 py-2 bg-purple-600 rounded-xl shadow-lg shadow-purple-100 hover:bg-purple-700 text-white transition-all font-semibold no-print">
+                        <Share2 size={18} />
+                        Velilerle Paylaş
                     </button>
                     <button onClick={downloadGeneralReport} className="flex items-center gap-2 px-4 py-2 bg-indigo-600 rounded-xl shadow-lg shadow-indigo-100 hover:bg-indigo-700 text-white transition-all font-semibold no-print">
                         <Download size={18} />

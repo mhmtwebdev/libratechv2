@@ -72,9 +72,20 @@ export const ParentView: React.FC = () => {
         );
     }
 
-    const filteredStudents = students.filter(s =>
-        searchTerm && (s.name.toLowerCase().includes(searchTerm.toLowerCase()) || s.studentNumber.includes(searchTerm))
-    );
+    const filteredStudents = students.filter(s => {
+        if (!searchTerm) return false;
+
+        const term = searchTerm.toLowerCase().trim();
+        const isNumeric = /^\d+$/.test(term);
+
+        if (isNumeric) {
+            // Tam okul numarası eşleşmesi
+            return s.studentNumber === term;
+        } else {
+            // Tam isim eşleşmesi (Küçük/Büyük harf duyarsız ve boşluklar temizlenmiş)
+            return s.name.toLowerCase().trim() === term;
+        }
+    });
 
     return (
         <div className="min-h-screen bg-gray-50 pb-12 font-sans">
