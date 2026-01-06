@@ -4,7 +4,7 @@ import { Student, Book, Transaction } from '../types';
 import {
     Download, FileText, BarChart3, Users, BookOpen,
     Award, TrendingUp, Calendar, Search, ChevronRight,
-    Printer, Filter, PieChart as PieChartIcon
+    Printer, Filter, PieChart as PieChartIcon, LogOut
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import {
@@ -17,6 +17,7 @@ export const Reports: React.FC = () => {
     const [books, setBooks] = useState<Book[]>([]);
     const [allTransactions, setAllTransactions] = useState<(Transaction & { book: Book, student: Student })[]>([]);
     const [loading, setLoading] = useState(true);
+    const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
 
     useEffect(() => {
@@ -111,6 +112,13 @@ export const Reports: React.FC = () => {
     const filteredStudents = students
         .filter(s => s.name.toLowerCase().includes(searchTerm.toLowerCase()) || s.studentNumber.includes(searchTerm))
         .sort((a, b) => (b.readingHistory?.length || 0) - (a.readingHistory?.length || 0));
+
+    // Get specific student stats for modal
+    const getStudentHistory = (studentId: string) => {
+        return allTransactions
+            .filter(t => t.studentId === studentId)
+            .sort((a, b) => new Date(b.issueDate).getTime() - new Date(a.issueDate).getTime());
+    };
 
     return (
         <div className="space-y-8 pb-12">
@@ -305,7 +313,10 @@ export const Reports: React.FC = () => {
                             </div>
                             <div className="mt-6 pt-4 border-t border-gray-50 flex items-center justify-between no-print">
                                 <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Kütüphane Kaydı</span>
-                                <button className="text-indigo-600 font-bold text-xs flex items-center gap-1 hover:gap-2 transition-all">
+                                <button
+                                    onClick={() => setSelectedStudent(student)}
+                                    className="text-indigo-600 font-bold text-xs flex items-center gap-1 hover:gap-2 transition-all"
+                                >
                                     Detay <ChevronRight size={14} />
                                 </button>
                             </div>
@@ -335,9 +346,96 @@ export const Reports: React.FC = () => {
                     ))}
                 </div>
             </div>
+            {/* Student Detail Modal */}
+            {selectedStudent && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in no-print">
+                    <div className="bg-white w-full max-w-2xl rounded-[2.5rem] shadow-2xl overflow-hidden animate-soft-fade max-h-[90vh] flex flex-col">
+                        <div className="bg-gradient-to-r from-indigo-600 to-purple-600 p-8 text-white relative flex justify-between items-center shrink-0">
+                            <div className="flex items-center gap-6">
+                                <div className="w-16 h-16 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center text-3xl font-bold shadow-soft">
+                                    {selectedStudent.name.split(' ').map(n => n[0]).join('')}
+                                </div>
+                                <div>
+                                    <h3 className="text-2xl font-black uppercase tracking-tight">{selectedStudent.name}</h3>
+                                    <p className="text-indigo-100 opacity-80 font-medium">Bireysel Okuma Gelişim Karnesi</p>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => setSelectedStudent(null)}
+                                className="p-3 hover:bg-white/10 rounded-full transition-transform hover:rotate-90"
+                            >
+                                <XIcon size={24} />
+                            </button>
+                        </div>
+
+                        <div className="p-8 overflow-y-auto flex-grow custom-scrollbar">
+                            <div className="grid grid-cols-3 gap-4 mb-8">
+                                <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100">
+                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Toplam Kitap</p>
+                                    <p className="text-xl font-black text-indigo-600">{selectedStudent.readingHistory?.length || 0}</p>
+                                </div>
+                                <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100">
+                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Sınıf Sırası</p>
+                                    <p className="text-xl font-black text-emerald-600">
+                                        #{students.filter(s => s.grade === selectedStudent.grade).sort((a, b) => (b.readingHistory?.length || 0) - (a.readingHistory?.length || 0)).findIndex(s => s.id === selectedStudent.id) + 1}
+                                    </p>
+                                </div>
+                                <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100">
+                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Öğrenci No</p>
+                                    <p className="text-xl font-black text-purple-600">{selectedStudent.studentNumber}</p>
+                                </div>
+                            </div>
+
+                            <div className="space-y-4">
+                                <h4 className="font-bold text-gray-900 flex items-center gap-2 text-lg">
+                                    <TrendingUp size={20} className="text-indigo-500" />
+                                    Okuma Serüveni
+                                </h4>
+                                {getStudentHistory(selectedStudent.id).length === 0 ? (
+                                    <div className="text-center py-10 bg-gray-50 rounded-3xl border-2 border-dashed border-gray-200">
+                                        <BookOpen className="mx-auto text-gray-300 mb-2" size={40} />
+                                        <p className="text-gray-500 font-medium">Henüz bir veri bulunmuyor</p>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-3">
+                                        {getStudentHistory(selectedStudent.id).map((t, i) => (
+                                            <div key={i} className="flex items-center justify-between p-4 bg-white border border-gray-100 rounded-2xl hover:border-indigo-200 hover:shadow-sm transition-all group">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+                                                        <BookIcon size={20} />
+                                                    </div>
+                                                    <div>
+                                                        <p className="font-bold text-gray-900">{t.book.title}</p>
+                                                        <p className="text-xs text-gray-500 italic">{t.book.author} • {new Date(t.issueDate).toLocaleDateString('tr-TR')}</p>
+                                                    </div>
+                                                </div>
+                                                <div className={`${t.isReturned ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'} px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter`}>
+                                                    {t.isReturned ? 'TAMAMLANDI' : 'OKUYOR'}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="p-8 bg-gray-50 border-t flex justify-end gap-3 shrink-0">
+                            <button
+                                onClick={() => setSelectedStudent(null)}
+                                className="px-8 py-3 bg-indigo-600 text-white rounded-2xl font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100 flex items-center gap-2"
+                            >
+                                Kapat
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
 
 // Missing Imports Fix
 const ClipboardList = ({ size, className }: { size?: number, className?: string }) => <FileText size={size} className={className} />;
+const BookIcon = ({ size, className }: { size?: number, className?: string }) => <BookOpen size={size} className={className} />;
+const XIcon = ({ size, className }: { size?: number, className?: string }) => <LogOut size={size} className={className} style={{ transform: 'rotate(0deg)' }} />;
+
