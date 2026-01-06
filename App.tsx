@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Layout } from './components/Layout';
 import { Login } from './pages/Login';
 import { Dashboard } from './pages/Dashboard';
@@ -8,33 +8,65 @@ import { Students } from './pages/Students';
 import { Reports } from './pages/Reports';
 import { ParentView } from './pages/ParentView';
 import { User } from './types';
-import { BookOpen } from 'lucide-react';
+import { auth } from './services/firebaseDatabase';
+import { onAuthStateChanged, signOut } from 'firebase/auth';
 
 const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [currentPage, setCurrentPage] = useState('dashboard');
+  const [authLoading, setAuthLoading] = useState(true);
 
   // Veli Görünümü Kontrolü (Daha dayanıklı kontrol)
   const queryParams = new URLSearchParams(window.location.search || window.location.hash.split('?')[1]);
   const isParentView = queryParams.get('view') === 'parent';
 
-  const handleLogin = () => {
-    // Simulating Firebase Auth login
-    setUser({
-      id: 'admin-1',
-      name: 'Admin User',
-      email: 'admin@library.school',
-      role: 'ADMIN'
+  useEffect(() => {
+    // Listen for Firebase Auth state changes
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      if (firebaseUser) {
+        // User is signed in
+        setUser({
+          id: firebaseUser.uid,
+          name: firebaseUser.displayName || 'Öğretmen',
+          email: firebaseUser.email || '',
+          role: 'ADMIN' // Default role
+        });
+      } else {
+        // User is signed out
+        setUser(null);
+      }
+      setAuthLoading(false);
     });
+
+    // Cleanup subscription
+    return () => unsubscribe();
+  }, []);
+
+  const handleLogin = () => {
+    // Firebase onAuthStateChanged handles the actual state update
+    // This function can be used for extra logic after login if needed
   };
 
-  const handleLogout = () => {
-    setUser(null);
-    setCurrentPage('dashboard');
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      setUser(null);
+      setCurrentPage('dashboard');
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
   };
 
   if (isParentView) {
     return <ParentView />;
+  }
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="w-12 h-12 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
   }
 
   if (!user) {

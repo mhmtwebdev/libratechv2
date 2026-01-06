@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { Library, Mail, Lock, User, ArrowRight, Chrome, Eye, EyeOff, Sparkles, AlertCircle } from 'lucide-react';
-import { auth } from '../services/firebaseDatabase';
+import { auth, googleProvider } from '../services/firebaseDatabase';
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
-  updateProfile
+  updateProfile,
+  signInWithPopup
 } from 'firebase/auth';
 
 interface LoginProps {
@@ -19,6 +20,22 @@ export const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const handleGoogleLogin = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      await signInWithPopup(auth, googleProvider);
+      onLogin();
+    } catch (err: any) {
+      console.error("Google auth error:", err);
+      if (err.code !== 'auth/popup-closed-by-user') {
+        setError('Google ile giriş yapılırken bir hata oluştu.');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -243,7 +260,7 @@ export const Login: React.FC<LoginProps> = ({ onLogin }) => {
           </div>
 
           <button
-            onClick={onLogin}
+            onClick={handleGoogleLogin}
             disabled={loading}
             className="w-full h-16 bg-white hover:bg-slate-50 border-2 border-slate-100 text-slate-700 rounded-2xl font-bold text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-4 group shadow-sm hover:shadow-md disabled:opacity-50"
           >
