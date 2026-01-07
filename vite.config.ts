@@ -2,7 +2,8 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 export default defineConfig({
   plugins: [react()],
-  base: '/libratechv2/',
+  // Vercel'de root (/) olarak, GitHub Pages'da ise alt klasör olarak çalışmasını sağlar
+  base: process.env.VERCEL ? '/' : '/libratechv2/',
   build: {
     rollupOptions: {
       output: {
