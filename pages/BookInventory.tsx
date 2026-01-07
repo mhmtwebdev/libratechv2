@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Book, BookStatus } from '../types';
 import { LibraryService } from '../services/firebaseDatabase';
-import { Plus, Printer, Trash2, Search, BookOpen, QrCode } from 'lucide-react';
+import { Plus, Printer, Trash2, Search, BookOpen, QrCode, FileDown } from 'lucide-react';
+import * as XLSX from 'xlsx';
 import { QRCodeDisplay } from '../components/QRCodeDisplay';
 
 export const BookInventory: React.FC = () => {
@@ -79,13 +80,23 @@ export const BookInventory: React.FC = () => {
   };
 
   const handlePrint = (bookToPrint?: Book) => {
-    // Eğer parametre olarak bir kitap geldiyse sadece onu yazdır, 
-    // yoksa seçili kitapları yazdır, seçim yoksa tüm filtreli listeyi yazdır.
-    if (bookToPrint) {
-      // Geçici olarak print listesini tekil kitap yapıyoruz
-      // Not: CSS print-only sınıfı buna bakacak
-    }
     window.print();
+  };
+
+  const exportToExcel = () => {
+    const dataToExport = filteredBooks.map(book => ({
+      'Kitap Adı': book.title,
+      'Yazar': book.author || 'Belirtilmemiş',
+      'ISBN/Barkod': book.isbn,
+      'Kategori': book.category || 'Genel',
+      'Durum': getStatusLabel(book.status),
+      'Eklenme Tarihi': new Date(book.addedDate).toLocaleDateString('tr-TR')
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Kitaplar");
+    XLSX.writeFile(workbook, `Kutuphane_Envanter_${new Date().toLocaleDateString('tr-TR')}.xlsx`);
   };
 
   const generateRandomISBN = () => {
@@ -133,6 +144,13 @@ export const BookInventory: React.FC = () => {
 
           <div className="flex gap-2">
             <button
+              onClick={exportToExcel}
+              className="bg-emerald-50 text-emerald-600 px-4 py-2.5 rounded-xl hover:bg-emerald-100 font-bold text-sm uppercase tracking-wide flex items-center justify-center gap-2 transition-all flex-1 md:flex-none border border-emerald-100"
+            >
+              <FileDown size={18} />
+              <span className="hidden lg:inline">Excel</span>
+            </button>
+            <button
               onClick={() => handlePrint()}
               className={`${selectedIds.length > 0 ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-600'} px-4 py-2.5 rounded-xl hover:opacity-90 font-bold text-sm uppercase tracking-wide flex items-center justify-center gap-2 transition-all flex-1 md:flex-none`}
             >
@@ -176,15 +194,14 @@ export const BookInventory: React.FC = () => {
               />
             </div>
             <div className="space-y-1">
-              <label htmlFor="book-author" className="text-[10px] uppercase tracking-widest font-black text-slate-400 ml-1">Yazar</label>
+              <label htmlFor="book-author" className="text-[10px] uppercase tracking-widest font-black text-slate-400 ml-1">Yazar (İsteğe Bağlı)</label>
               <input
                 id="book-author"
                 name="book-author"
-                placeholder="Örn: Victor Hugo"
+                placeholder="Örn: Victor Hugo (Boş bırakılabilir)"
                 className="w-full bg-slate-50 border-2 border-slate-100 rounded-xl p-3 font-bold text-slate-700 outline-none focus:border-cyan-500 transition-all"
                 value={newBook.author}
                 onChange={e => setNewBook({ ...newBook, author: e.target.value })}
-                required
               />
             </div>
             <div className="space-y-1 md:col-span-1">

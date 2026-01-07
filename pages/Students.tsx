@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Student } from '../types';
 import { LibraryService } from '../services/firebaseDatabase';
-import { Plus, Printer, Trash2, Search, Book as BookIcon, X, ClipboardList, GraduationCap } from 'lucide-react';
+import { Plus, Printer, Trash2, Search, Book as BookIcon, X, ClipboardList, GraduationCap, FileDown } from 'lucide-react';
+import * as XLSX from 'xlsx';
 import { QRCodeDisplay } from '../components/QRCodeDisplay';
 
 export const Students: React.FC = () => {
@@ -81,6 +82,21 @@ export const Students: React.FC = () => {
     window.print();
   };
 
+  const exportToExcel = () => {
+    const dataToExport = filteredStudents.map(student => ({
+      'Ad Soyad': student.name,
+      'Öğrenci No': student.studentNumber,
+      'Sınıf': student.grade,
+      'Okuduğu Kitap Sayısı': student.readingHistory ? student.readingHistory.length : 0,
+      'Email': student.email || 'Belirtilmemiş'
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Öğrenciler");
+    XLSX.writeFile(workbook, `Ogrenci_Listesi_${new Date().toLocaleDateString('tr-TR')}.xlsx`);
+  };
+
   const handleShowHistory = async (student: Student) => {
     setSelectedStudent(student);
     setIsLoadingHistory(true);
@@ -148,6 +164,13 @@ export const Students: React.FC = () => {
           </div>
 
           <div className="flex gap-2">
+            <button
+              onClick={exportToExcel}
+              className="bg-emerald-50 text-emerald-600 px-4 py-2.5 rounded-xl hover:bg-emerald-100 font-bold text-sm uppercase tracking-wide flex items-center justify-center gap-2 transition-all flex-1 md:flex-none border border-emerald-100"
+            >
+              <FileDown size={18} />
+              <span className="hidden lg:inline">Excel</span>
+            </button>
             <button
               onClick={handlePrint}
               className={`${selectedIds.length > 0 ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-600'} px-4 py-2.5 rounded-xl hover:opacity-90 font-bold text-sm uppercase tracking-wide flex items-center justify-center gap-2 transition-all flex-1 md:flex-none`}
