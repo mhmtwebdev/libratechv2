@@ -19,8 +19,10 @@ export const Students: React.FC = () => {
 
   const fetchStudents = async () => {
     const data = await LibraryService.getStudents();
-    setStudents(data);
-    setFilteredStudents(data);
+    // Öğrencileri isimlerine göre alfabetik (A-Z) sıralıyoruz
+    const sortedData = [...data].sort((a, b) => a.name.localeCompare(b.name, 'tr', { sensitivity: 'base' }));
+    setStudents(sortedData);
+    setFilteredStudents(sortedData);
   };
 
   useEffect(() => {

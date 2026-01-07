@@ -14,8 +14,14 @@ export const BookInventory: React.FC = () => {
 
   const fetchBooks = async () => {
     const data = await LibraryService.getBooks();
-    setBooks(data);
-    setFilteredBooks(data);
+    // En yeni eklenen kitapların en üstte görünmesi için tarihe göre sıralıyoruz
+    const sortedData = [...data].sort((a, b) => {
+      const dateA = new Date(a.addedDate || 0).getTime();
+      const dateB = new Date(b.addedDate || 0).getTime();
+      return dateB - dateA;
+    });
+    setBooks(sortedData);
+    setFilteredBooks(sortedData);
   };
 
   useEffect(() => {
