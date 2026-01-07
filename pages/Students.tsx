@@ -8,6 +8,8 @@ export const Students: React.FC = () => {
   const [students, setStudents] = useState<Student[]>([]);
   const [filteredStudents, setFilteredStudents] = useState<Student[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [isAllSelected, setIsAllSelected] = useState(false);
 
   const [isAdding, setIsAdding] = useState(false);
   const [newStudent, setNewStudent] = useState({ name: '', studentNumber: '', email: '', grade: '' });
@@ -38,6 +40,21 @@ export const Students: React.FC = () => {
     );
     setFilteredStudents(filtered);
   }, [searchTerm, students]);
+
+  const toggleSelectAll = () => {
+    if (isAllSelected) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(filteredStudents.map(s => s.id));
+    }
+    setIsAllSelected(!isAllSelected);
+  };
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev =>
+      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+    );
+  };
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -133,10 +150,15 @@ export const Students: React.FC = () => {
           <div className="flex gap-2">
             <button
               onClick={handlePrint}
-              className="bg-slate-100 text-slate-600 px-4 py-2.5 rounded-xl hover:bg-slate-200 font-bold text-sm uppercase tracking-wide flex items-center justify-center gap-2 transition-all flex-1 md:flex-none"
+              className={`${selectedIds.length > 0 ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-600'} px-4 py-2.5 rounded-xl hover:opacity-90 font-bold text-sm uppercase tracking-wide flex items-center justify-center gap-2 transition-all flex-1 md:flex-none`}
             >
               <Printer size={18} />
-              <span className="hidden lg:inline">Kart Yazdır</span>
+              <span className="hidden lg:inline">
+                {selectedIds.length > 0 ? `Seçilenleri Yazdır (${selectedIds.length})` : 'Tümünü Yazdır'}
+              </span>
+              <span className="lg:hidden">
+                {selectedIds.length > 0 ? `(${selectedIds.length})` : ''}
+              </span>
             </button>
             <button
               onClick={() => setIsAdding(!isAdding)}
@@ -214,8 +236,16 @@ export const Students: React.FC = () => {
         <table className="w-full text-left">
           <thead className="bg-slate-50/50">
             <tr>
-              <th className="px-8 py-5 text-[11px] font-black text-slate-400 uppercase tracking-widest">İsim</th>
-              <th className="px-8 py-5 text-[11px] font-black text-slate-400 uppercase tracking-widest">Öğrenci No</th>
+              <th className="px-6 py-5 no-print">
+                <input
+                  type="checkbox"
+                  checked={isAllSelected && filteredStudents.length > 0}
+                  onChange={toggleSelectAll}
+                  className="w-5 h-5 rounded border-2 border-slate-300 text-cyan-600 focus:ring-cyan-500 cursor-pointer"
+                />
+              </th>
+              <th className="px-6 py-5 text-[11px] font-black text-slate-400 uppercase tracking-widest">İsim</th>
+              <th className="px-8 py-5 text-[11px) font-black text-slate-400 uppercase tracking-widest">Öğrenci No</th>
               <th className="px-8 py-5 text-[11px] font-black text-slate-400 uppercase tracking-widest">Sınıf</th>
               <th className="px-8 py-5 text-[11px] font-black text-slate-400 uppercase tracking-widest">Geçmiş</th>
               <th className="px-8 py-5 text-[11px] font-black text-slate-400 uppercase tracking-widest text-right">İşlem</th>
@@ -223,10 +253,18 @@ export const Students: React.FC = () => {
           </thead>
           <tbody className="divide-y divide-slate-50">
             {filteredStudents.length === 0 ? (
-              <tr><td colSpan={5} className="text-center py-12 text-slate-400 font-bold">Öğrenci bulunamadı.</td></tr>
+              <tr><td colSpan={6} className="text-center py-12 text-slate-400 font-bold">Öğrenci bulunamadı.</td></tr>
             ) : filteredStudents.map(student => (
-              <tr key={student.id} className="hover:bg-slate-50 transition-colors group">
-                <td className="px-8 py-4">
+              <tr key={student.id} className={`hover:bg-slate-50 transition-colors group ${selectedIds.includes(student.id) ? 'bg-cyan-50/50' : ''}`}>
+                <td className="px-6 py-4 no-print">
+                  <input
+                    type="checkbox"
+                    checked={selectedIds.includes(student.id)}
+                    onChange={() => toggleSelect(student.id)}
+                    className="w-5 h-5 rounded border-2 border-slate-300 text-cyan-600 focus:ring-cyan-500 cursor-pointer"
+                  />
+                </td>
+                <td className="px-6 py-4">
                   <button
                     onClick={() => handleShowHistory(student)}
                     className="font-bold text-slate-800 hover:text-cyan-600 hover:underline text-left text-lg transition-colors"
@@ -245,13 +283,25 @@ export const Students: React.FC = () => {
                   </div>
                 </td>
                 <td className="px-8 py-4 text-right">
-                  <button
-                    onClick={() => handleDelete(student.id)}
-                    className="text-slate-400 hover:text-rose-600 p-2 rounded-xl hover:bg-rose-50 transition-all"
-                    title="Öğrenciyi Sil"
-                  >
-                    <Trash2 size={18} />
-                  </button>
+                  <div className="flex justify-end gap-2">
+                    <button
+                      onClick={() => {
+                        setSelectedIds([student.id]);
+                        setTimeout(() => window.print(), 100);
+                      }}
+                      className="text-slate-400 hover:text-cyan-600 p-2 rounded-xl hover:bg-cyan-50 transition-all no-print"
+                      title="Sadece Bu Kartı Yazdır"
+                    >
+                      <Printer size={18} />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(student.id)}
+                      className="text-slate-400 hover:text-rose-600 p-2 rounded-xl hover:bg-rose-50 transition-all no-print"
+                      title="Öğrenciyi Sil"
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
@@ -264,7 +314,32 @@ export const Students: React.FC = () => {
         {filteredStudents.length === 0 ? (
           <div className="bg-white p-8 rounded-2xl text-center text-slate-400 font-bold border border-slate-100">Öğrenci bulunamadı.</div>
         ) : filteredStudents.map(student => (
-          <div key={student.id} className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex justify-between items-start">
+          <div key={student.id} className={`bg-white p-5 rounded-2xl shadow-sm border transition-all ${selectedIds.includes(student.id) ? 'border-cyan-200 bg-cyan-50/30' : 'border-slate-100'}`}>
+            <div className="flex justify-between items-start mb-2">
+              <input
+                type="checkbox"
+                checked={selectedIds.includes(student.id)}
+                onChange={() => toggleSelect(student.id)}
+                className="w-6 h-6 rounded-lg border-2 border-slate-300 text-cyan-600 focus:ring-cyan-500 cursor-pointer"
+              />
+              <div className="flex gap-2">
+                <button
+                  onClick={() => {
+                    setSelectedIds([student.id]);
+                    setTimeout(() => window.print(), 100);
+                  }}
+                  className="text-slate-400 p-2 rounded-xl bg-slate-50 active:bg-cyan-100 transition-colors"
+                >
+                  <Printer size={20} />
+                </button>
+                <button
+                  onClick={() => handleDelete(student.id)}
+                  className="text-slate-400 p-2 rounded-xl bg-slate-50 active:bg-rose-100 transition-colors"
+                >
+                  <Trash2 size={20} />
+                </button>
+              </div>
+            </div>
             <div className="space-y-1">
               <button
                 onClick={() => handleShowHistory(student)}
@@ -281,13 +356,6 @@ export const Students: React.FC = () => {
                 </span>
               </div>
             </div>
-            <button
-              onClick={() => handleDelete(student.id)}
-              className="text-slate-400 hover:text-rose-600 p-2 rounded-xl bg-slate-50 hover:bg-rose-50 transition-colors"
-              title="Öğrenciyi Sil"
-            >
-              <Trash2 size={20} />
-            </button>
           </div>
         ))}
       </div>
@@ -379,9 +447,14 @@ export const Students: React.FC = () => {
 
       {/* Print View - Library Cards */}
       <div className="print-only w-full">
-        <h1 className="text-2xl font-bold mb-8 text-center">Kütüphane Kartları</h1>
+        <h1 className="text-2xl font-bold mb-8 text-center">
+          {selectedIds.length > 0 ? 'Seçilen Öğrenci Kütüphane Kartları' : 'Tüm Öğrenci Kütüphane Kartları'}
+        </h1>
         <div className="grid grid-cols-2 gap-8 w-full">
-          {filteredStudents.map(student => (
+          {(selectedIds.length > 0
+            ? students.filter(s => selectedIds.includes(s.id))
+            : filteredStudents
+          ).map(student => (
             <div key={student.id} className="border-2 border-black rounded-xl p-6 flex items-center justify-between break-inside-avoid shadow-none">
               <div className="flex-1 mr-4">
                 <div className="flex items-center space-x-2 mb-2">

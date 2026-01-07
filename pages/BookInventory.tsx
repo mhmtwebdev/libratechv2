@@ -8,6 +8,8 @@ export const BookInventory: React.FC = () => {
   const [books, setBooks] = useState<Book[]>([]);
   const [filteredBooks, setFilteredBooks] = useState<Book[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [isAllSelected, setIsAllSelected] = useState(false);
 
   const [isAdding, setIsAdding] = useState(false);
   const [newBook, setNewBook] = useState({ title: '', author: '', isbn: '', category: '' });
@@ -36,7 +38,24 @@ export const BookInventory: React.FC = () => {
       book.isbn.includes(lowerTerm)
     );
     setFilteredBooks(filtered);
+    // Filtre değişince seçimi temizleme isteğe bağlıdır, şimdilik aktif bırakıyoruz
+    // setSelectedIds([]);
   }, [searchTerm, books]);
+
+  const toggleSelectAll = () => {
+    if (isAllSelected) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(filteredBooks.map(b => b.id));
+    }
+    setIsAllSelected(!isAllSelected);
+  };
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev =>
+      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+    );
+  };
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,7 +78,13 @@ export const BookInventory: React.FC = () => {
     }
   };
 
-  const handlePrint = () => {
+  const handlePrint = (bookToPrint?: Book) => {
+    // Eğer parametre olarak bir kitap geldiyse sadece onu yazdır, 
+    // yoksa seçili kitapları yazdır, seçim yoksa tüm filtreli listeyi yazdır.
+    if (bookToPrint) {
+      // Geçici olarak print listesini tekil kitap yapıyoruz
+      // Not: CSS print-only sınıfı buna bakacak
+    }
     window.print();
   };
 
@@ -108,11 +133,16 @@ export const BookInventory: React.FC = () => {
 
           <div className="flex gap-2">
             <button
-              onClick={handlePrint}
-              className="bg-slate-100 text-slate-600 px-4 py-2.5 rounded-xl hover:bg-slate-200 font-bold text-sm uppercase tracking-wide flex items-center justify-center gap-2 transition-all flex-1 md:flex-none"
+              onClick={() => handlePrint()}
+              className={`${selectedIds.length > 0 ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-600'} px-4 py-2.5 rounded-xl hover:opacity-90 font-bold text-sm uppercase tracking-wide flex items-center justify-center gap-2 transition-all flex-1 md:flex-none`}
             >
               <Printer size={18} />
-              <span className="hidden lg:inline">QR Yazdır</span>
+              <span className="hidden lg:inline">
+                {selectedIds.length > 0 ? `Seçilenleri Yazdır (${selectedIds.length})` : 'Tümünü Yazdır'}
+              </span>
+              <span className="lg:hidden">
+                {selectedIds.length > 0 ? `(${selectedIds.length})` : ''}
+              </span>
             </button>
             <button
               onClick={() => setIsAdding(!isAdding)}
@@ -198,7 +228,15 @@ export const BookInventory: React.FC = () => {
         <table className="w-full text-left">
           <thead className="bg-slate-50/50">
             <tr>
-              <th className="px-8 py-5 text-[11px] font-black text-slate-400 uppercase tracking-widest">Kitap Bilgisi</th>
+              <th className="px-6 py-5 no-print">
+                <input
+                  type="checkbox"
+                  checked={isAllSelected && filteredBooks.length > 0}
+                  onChange={toggleSelectAll}
+                  className="w-5 h-5 rounded border-2 border-slate-300 text-cyan-600 focus:ring-cyan-500 cursor-pointer"
+                />
+              </th>
+              <th className="px-6 py-5 text-[11px] font-black text-slate-400 uppercase tracking-widest">Kitap Bilgisi</th>
               <th className="px-8 py-5 text-[11px] font-black text-slate-400 uppercase tracking-widest">Yazar</th>
               <th className="px-8 py-5 text-[11px] font-black text-slate-400 uppercase tracking-widest">ISBN</th>
               <th className="px-8 py-5 text-[11px] font-black text-slate-400 uppercase tracking-widest">Durum</th>
@@ -207,10 +245,18 @@ export const BookInventory: React.FC = () => {
           </thead>
           <tbody className="divide-y divide-slate-50">
             {filteredBooks.length === 0 ? (
-              <tr><td colSpan={5} className="text-center py-12 text-slate-400 font-bold">Aradığınız kriterlerde kitap bulunamadı.</td></tr>
+              <tr><td colSpan={6} className="text-center py-12 text-slate-400 font-bold">Aradığınız kriterlerde kitap bulunamadı.</td></tr>
             ) : filteredBooks.map(book => (
-              <tr key={book.id} className="group hover:bg-slate-50 transition-colors">
-                <td className="px-8 py-4">
+              <tr key={book.id} className={`group hover:bg-slate-50 transition-colors ${selectedIds.includes(book.id) ? 'bg-cyan-50/50' : ''}`}>
+                <td className="px-6 py-4 no-print">
+                  <input
+                    type="checkbox"
+                    checked={selectedIds.includes(book.id)}
+                    onChange={() => toggleSelect(book.id)}
+                    className="w-5 h-5 rounded border-2 border-slate-300 text-cyan-600 focus:ring-cyan-500 cursor-pointer"
+                  />
+                </td>
+                <td className="px-6 py-4">
                   <div className="font-bold text-slate-800 text-lg group-hover:text-cyan-700 transition-colors">{book.title}</div>
                   {book.category && <div className="text-[10px] inline-block bg-slate-100 text-slate-500 px-2 py-0.5 rounded font-bold uppercase tracking-wide mt-1">{book.category}</div>}
                 </td>
@@ -225,13 +271,25 @@ export const BookInventory: React.FC = () => {
                   </span>
                 </td>
                 <td className="px-8 py-4 text-right">
-                  <button
-                    onClick={() => handleDelete(book.id)}
-                    className="text-slate-400 hover:text-rose-500 p-2 rounded-xl hover:bg-rose-50 transition-all"
-                    title="Kitabı Sil"
-                  >
-                    <Trash2 size={18} />
-                  </button>
+                  <div className="flex justify-end gap-2">
+                    <button
+                      onClick={() => {
+                        setSelectedIds([book.id]);
+                        setTimeout(() => window.print(), 100);
+                      }}
+                      className="text-slate-400 hover:text-cyan-600 p-2 rounded-xl hover:bg-cyan-50 transition-all no-print"
+                      title="Sadece Bu QR'ı Yazdır"
+                    >
+                      <Printer size={18} />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(book.id)}
+                      className="text-slate-400 hover:text-rose-500 p-2 rounded-xl hover:bg-rose-50 transition-all no-print"
+                      title="Kitabı Sil"
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
@@ -244,7 +302,32 @@ export const BookInventory: React.FC = () => {
         {filteredBooks.length === 0 ? (
           <div className="bg-white p-8 rounded-2xl text-center text-slate-400 font-bold border border-slate-100">Kitap bulunamadı.</div>
         ) : filteredBooks.map(book => (
-          <div key={book.id} className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex justify-between items-start">
+          <div key={book.id} className={`bg-white p-5 rounded-2xl shadow-sm border transition-all ${selectedIds.includes(book.id) ? 'border-cyan-200 bg-cyan-50/30' : 'border-slate-100'}`}>
+            <div className="flex justify-between items-start mb-2">
+              <input
+                type="checkbox"
+                checked={selectedIds.includes(book.id)}
+                onChange={() => toggleSelect(book.id)}
+                className="w-6 h-6 rounded-lg border-2 border-slate-300 text-cyan-600 focus:ring-cyan-500 cursor-pointer"
+              />
+              <div className="flex gap-2">
+                <button
+                  onClick={() => {
+                    setSelectedIds([book.id]);
+                    setTimeout(() => window.print(), 100);
+                  }}
+                  className="text-slate-400 p-2 rounded-xl bg-slate-50 active:bg-cyan-100 transition-colors"
+                >
+                  <Printer size={20} />
+                </button>
+                <button
+                  onClick={() => handleDelete(book.id)}
+                  className="text-slate-400 p-2 rounded-xl bg-slate-50 active:bg-rose-100 transition-colors"
+                >
+                  <Trash2 size={20} />
+                </button>
+              </div>
+            </div>
             <div className="space-y-1">
               <h4 className="font-bold text-slate-900 text-lg">{book.title}</h4>
               <p className="text-sm font-medium text-slate-500">{book.author}</p>
@@ -255,22 +338,20 @@ export const BookInventory: React.FC = () => {
                 </span>
               </div>
             </div>
-            <button
-              onClick={() => handleDelete(book.id)}
-              className="text-slate-400 hover:text-rose-500 p-2 rounded-xl bg-slate-50 hover:bg-rose-50 transition-colors"
-              title="Kitabı Sil"
-            >
-              <Trash2 size={20} />
-            </button>
           </div>
         ))}
       </div>
 
       {/* Print View (QR Codes Grid) */}
       <div className="print-only">
-        <h1 className="text-2xl font-bold mb-6 text-center">Kitap Envanteri QR Kodları</h1>
+        <h1 className="text-2xl font-bold mb-6 text-center">
+          {selectedIds.length > 0 ? 'Seçilen Kitap QR Kodları' : 'Tüm Kitap Envanteri QR Kodları'}
+        </h1>
         <div className="grid grid-cols-4 gap-4">
-          {filteredBooks.map(book => (
+          {(selectedIds.length > 0
+            ? books.filter(b => selectedIds.includes(b.id))
+            : filteredBooks
+          ).map(book => (
             <QRCodeDisplay
               key={book.id}
               value={book.isbn}
