@@ -1,0 +1,1 @@
+import{c as e}from"./index-10d1ebfd.js";const c=e("Award",[["circle",{cx:"12",cy:"8",r:"6",key:"1vp47v"}],["path",{d:"M15.477 12.89 17 22l-5-3-5 3 1.523-9.11",key:"em7aur"}]]),t=e("ChevronRight",[["path",{d:"m9 18 6-6-6-6",key:"mthhwq"}]]);export{c as A,t as C};
