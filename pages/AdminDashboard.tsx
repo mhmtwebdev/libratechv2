@@ -56,6 +56,13 @@ export const AdminDashboard: React.FC = () => {
         if (success) fetchData();
     };
 
+    const handleDeleteAnnouncement = async (id: string) => {
+        if (!window.confirm('Bu duyuruyu tamamen silmek istediğinize emin misiniz? Bu işlem geri alınamaz.')) return;
+
+        const success = await LibraryService.deleteAnnouncement(id);
+        if (success) fetchData();
+    };
+
     useEffect(() => {
         fetchData();
     }, []);
@@ -323,8 +330,8 @@ export const AdminDashboard: React.FC = () => {
                                         type="button"
                                         onClick={() => setNewAnnouncement({ ...newAnnouncement, type })}
                                         className={`py-3 rounded-xl text-[10px] font-black uppercase tracking-widest border-2 transition-all ${newAnnouncement.type === type
-                                                ? 'border-rose-500 bg-rose-50 text-rose-600'
-                                                : 'border-slate-100 bg-white text-slate-400'
+                                            ? 'border-rose-500 bg-rose-50 text-rose-600'
+                                            : 'border-slate-100 bg-white text-slate-400'
                                             }`}
                                     >
                                         {type === 'INFO' ? 'Bilgi' : type === 'WARNING' ? 'Uyarı' : 'Acil'}
@@ -376,8 +383,8 @@ export const AdminDashboard: React.FC = () => {
                                         <div className="flex-1">
                                             <div className="flex items-center gap-3 mb-3">
                                                 <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${ann.type === 'URGENT' ? 'bg-rose-100 text-rose-600' :
-                                                        ann.type === 'WARNING' ? 'bg-amber-100 text-amber-600' :
-                                                            'bg-cyan-100 text-cyan-600'
+                                                    ann.type === 'WARNING' ? 'bg-amber-100 text-amber-600' :
+                                                        'bg-cyan-100 text-cyan-600'
                                                     }`}>
                                                     {ann.type === 'URGENT' ? 'Acil' : ann.type === 'WARNING' ? 'Uyarı' : 'Bilgi'}
                                                 </span>
@@ -390,11 +397,18 @@ export const AdminDashboard: React.FC = () => {
                                             <button
                                                 onClick={() => handleToggleAnnouncement(ann.id, ann.isActive)}
                                                 className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest border-2 transition-all ${ann.isActive
-                                                        ? 'bg-emerald-50 text-emerald-600 border-emerald-100 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-100 group/btn'
-                                                        : 'bg-slate-100 text-slate-400 border-slate-200 hover:bg-emerald-50 hover:text-emerald-600 hover:border-emerald-100'
+                                                    ? 'bg-emerald-50 text-emerald-600 border-emerald-100 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-100 group/btn'
+                                                    : 'bg-slate-100 text-slate-400 border-slate-200 hover:bg-emerald-50 hover:text-emerald-600 hover:border-emerald-100'
                                                     }`}
                                             >
                                                 {ann.isActive ? 'Yayından Kaldır' : 'Tekrar Yayınla'}
+                                            </button>
+                                            <button
+                                                onClick={() => handleDeleteAnnouncement(ann.id)}
+                                                className="p-2 text-slate-300 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all"
+                                                title="Tamamen Sil"
+                                            >
+                                                <Trash2 size={18} />
                                             </button>
                                         </div>
                                     </div>

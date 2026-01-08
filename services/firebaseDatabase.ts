@@ -539,5 +539,15 @@ export const LibraryService = {
             console.error("updateAnnouncementStatus error:", error);
             return false;
         }
+    },
+
+    deleteAnnouncement: async (id: string) => {
+        try {
+            await deleteDoc(doc(db, "announcements", id));
+            return true;
+        } catch (error) {
+            console.error("deleteAnnouncement error:", error);
+            return false;
+        }
     }
 };
