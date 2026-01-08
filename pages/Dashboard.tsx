@@ -1,21 +1,27 @@
 import React, { useEffect, useState } from 'react';
-import { Transaction, Book, Student } from '../types';
+import { Transaction, Book, Student, Announcement } from '../types';
 import { LibraryService } from '../services/firebaseDatabase';
-import { Clock, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Clock, AlertCircle, CheckCircle2, Megaphone, X, Info, AlertTriangle } from 'lucide-react';
 
 export const Dashboard: React.FC = () => {
   const [loans, setLoans] = useState<(Transaction & { book: Book, student: Student })[]>([]);
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [loading, setLoading] = useState(true);
+  const [closedAnnouncements, setClosedAnnouncements] = useState<string[]>([]);
 
-  const fetchLoans = async () => {
+  const fetchData = async () => {
     setLoading(true);
-    const data = await LibraryService.getActiveTransactions();
-    setLoans(data);
+    const [loanData, announcementData] = await Promise.all([
+      LibraryService.getActiveTransactions(),
+      LibraryService.getAnnouncements(true)
+    ]);
+    setLoans(loanData);
+    setAnnouncements(announcementData);
     setLoading(false);
   };
 
   useEffect(() => {
-    fetchLoans();
+    fetchData();
   }, []);
 
   const getDaysKept = (issueDate: string) => {
@@ -35,10 +41,67 @@ export const Dashboard: React.FC = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-black text-slate-800 uppercase tracking-tight">Kütüphane Paneli</h2>
-        <button onClick={fetchLoans} className="text-sm font-bold text-cyan-600 hover:text-cyan-700 uppercase tracking-widest transition-colors">
+        <button onClick={fetchData} className="text-sm font-bold text-cyan-600 hover:text-cyan-700 uppercase tracking-widest transition-colors">
           Verileri Yenile
         </button>
       </div>
+
+      {/* Announcements Section */}
+      {announcements.length > 0 && announcements.filter((a: Announcement) => !closedAnnouncements.includes(a.id)).length > 0 && (
+        <div className="space-y-4 animate-soft-fade">
+          {announcements
+            .filter((a: Announcement) => !closedAnnouncements.includes(a.id))
+            .map((ann: Announcement) => (
+              <div
+                key={ann.id}
+                className={`relative overflow-hidden p-6 rounded-[2rem] border shadow-sm transition-all hover:shadow-md ${ann.type === 'URGENT' ? 'bg-rose-50 border-rose-100' :
+                  ann.type === 'WARNING' ? 'bg-amber-50 border-amber-100' :
+                    'bg-indigo-50 border-indigo-100'
+                  }`}
+              >
+                <div className="flex items-start gap-4 relative z-10">
+                  <div className={`p-3 rounded-2xl ${ann.type === 'URGENT' ? 'bg-rose-600 text-white' :
+                    ann.type === 'WARNING' ? 'bg-amber-500 text-white' :
+                      'bg-indigo-600 text-white'
+                    }`}>
+                    {ann.type === 'URGENT' ? <AlertCircle size={24} /> :
+                      ann.type === 'WARNING' ? <AlertTriangle size={24} /> :
+                        <Megaphone size={24} />}
+                  </div>
+                  <div className="flex-1 pr-8">
+                    <div className="flex items-center gap-3">
+                      <h4 className={`font-black uppercase tracking-tight ${ann.type === 'URGENT' ? 'text-rose-900' :
+                        ann.type === 'WARNING' ? 'text-amber-900' :
+                          'text-indigo-900'
+                        }`}>
+                        {ann.title}
+                      </h4>
+                      <span className="text-[10px] font-black opacity-30 uppercase tracking-[0.2em]">
+                        {new Date(ann.createdAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <p className={`mt-1 font-medium text-sm leading-relaxed ${ann.type === 'URGENT' ? 'text-rose-700' :
+                      ann.type === 'WARNING' ? 'text-amber-700' :
+                        'text-indigo-700'
+                      }`}>
+                      {ann.message}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setClosedAnnouncements([...closedAnnouncements, ann.id])}
+                    className="absolute top-0 right-0 p-2 text-slate-400 hover:text-slate-600 transition-colors"
+                  >
+                    <X size={20} />
+                  </button>
+                </div>
+                <div className={`absolute -bottom-10 -right-10 w-32 h-32 rounded-full blur-3xl opacity-20 ${ann.type === 'URGENT' ? 'bg-rose-500' :
+                  ann.type === 'WARNING' ? 'bg-amber-500' :
+                    'bg-indigo-500'
+                  }`} />
+              </div>
+            ))}
+        </div>
+      )}
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -60,7 +123,7 @@ export const Dashboard: React.FC = () => {
             <div>
               <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Gecikmiş Kitaplar</p>
               <h3 className="text-4xl font-black text-rose-600 mt-1">
-                {loans.filter(l => isOverdue(l.dueDate)).length}
+                {loans.filter((l: any) => isOverdue(l.dueDate)).length}
               </h3>
             </div>
             <div className="bg-rose-50 p-4 rounded-2xl text-rose-600 group-hover:scale-110 transition-transform">
@@ -75,7 +138,7 @@ export const Dashboard: React.FC = () => {
             <div>
               <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Zamanında Teslimler</p>
               <h3 className="text-4xl font-black text-emerald-600 mt-1">
-                {loans.filter(l => !isOverdue(l.dueDate)).length}
+                {loans.filter((l: any) => !isOverdue(l.dueDate)).length}
               </h3>
             </div>
             <div className="bg-emerald-50 p-4 rounded-2xl text-emerald-600 group-hover:scale-110 transition-transform">
@@ -117,7 +180,7 @@ export const Dashboard: React.FC = () => {
                   </td>
                 </tr>
               ) : (
-                loans.map((loan) => {
+                loans.map((loan: any) => {
                   const overdue = isOverdue(loan.dueDate);
                   const daysKept = getDaysKept(loan.issueDate);
 

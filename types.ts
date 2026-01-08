@@ -58,3 +58,13 @@ export interface SupportRequest {
   status: 'OPEN' | 'IN_PROGRESS' | 'CLOSED';
   createdAt: string;
 }
+
+export interface Announcement {
+  id: string;
+  title: string;
+  message: string;
+  type: 'INFO' | 'WARNING' | 'URGENT';
+  createdAt: string;
+  authorEmail: string;
+  isActive: boolean;
+}

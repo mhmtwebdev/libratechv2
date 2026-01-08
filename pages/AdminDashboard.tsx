@@ -1,36 +1,59 @@
 import React, { useEffect, useState } from 'react';
 import { LibraryService } from '../services/firebaseDatabase';
-import { Users, BookOpen, GraduationCap, ArrowLeftRight, ShieldCheck, Mail, Calendar, Activity, Zap, AlertTriangle, MessageSquare, CheckCircle, Clock } from 'lucide-react';
-import { SystemLog, SupportRequest } from '../types';
+import { Users, BookOpen, GraduationCap, ArrowLeftRight, ShieldCheck, Mail, Calendar, Activity, Zap, AlertTriangle, MessageSquare, CheckCircle, Clock, Megaphone, Trash2 } from 'lucide-react';
+import { SystemLog, SupportRequest, Announcement } from '../types';
 
 export const AdminDashboard: React.FC = () => {
     const [stats, setStats] = useState({ totalBooks: 0, totalStudents: 0, totalTransactions: 0, totalTeachers: 0 });
     const [teachers, setTeachers] = useState<any[]>([]);
     const [logs, setLogs] = useState<SystemLog[]>([]);
     const [supportRequests, setSupportRequests] = useState<SupportRequest[]>([]);
+    const [announcements, setAnnouncements] = useState<Announcement[]>([]);
     const [performance, setPerformance] = useState<{ latency: number, status: string }>({ latency: 0, status: 'EXCELLENT' });
+    const [newAnnouncement, setNewAnnouncement] = useState({ title: '', message: '', type: 'INFO' as 'INFO' | 'WARNING' | 'URGENT' });
     const [loading, setLoading] = useState(true);
+    const [submitting, setSubmitting] = useState(false);
 
     const fetchData = async () => {
         setLoading(true);
         try {
-            const [s, t, l, sr, p] = await Promise.all([
+            const [s, t, l, sr, p, an] = await Promise.all([
                 LibraryService.getGlobalStats(),
                 LibraryService.getTeachers(),
                 LibraryService.getSystemLogs(),
                 LibraryService.getSupportRequests(),
-                LibraryService.getSystemPerformance()
+                LibraryService.getSystemPerformance(),
+                LibraryService.getAnnouncements(false)
             ]);
             setStats(s);
             setTeachers(t);
             setLogs(l);
             setSupportRequests(sr);
             setPerformance(p);
+            setAnnouncements(an);
         } catch (error) {
             console.error("Admin data fetch error:", error);
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleCreateAnnouncement = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!newAnnouncement.title || !newAnnouncement.message) return;
+
+        setSubmitting(true);
+        const success = await LibraryService.addAnnouncement(newAnnouncement);
+        if (success) {
+            setNewAnnouncement({ title: '', message: '', type: 'INFO' });
+            fetchData();
+        }
+        setSubmitting(false);
+    };
+
+    const handleToggleAnnouncement = async (id: string, currentStatus: boolean) => {
+        const success = await LibraryService.updateAnnouncementStatus(id, !currentStatus);
+        if (success) fetchData();
     };
 
     useEffect(() => {
@@ -266,6 +289,120 @@ export const AdminDashboard: React.FC = () => {
                             </div>
                         ))
                     )}
+                </div>
+            </div>
+
+            {/* Announcements Management Section */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+                {/* Create Announcement Form */}
+                <div className="bg-white p-10 rounded-[3.5rem] shadow-2xl shadow-slate-200/50 border border-slate-100 flex flex-col">
+                    <div className="flex items-center gap-3 mb-8">
+                        <Megaphone className="text-rose-600" size={24} />
+                        <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight">Yeni Duyuru Yayınla</h3>
+                    </div>
+
+                    <form onSubmit={handleCreateAnnouncement} className="space-y-6">
+                        <div>
+                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2 px-2">Duyuru Başlığı</label>
+                            <input
+                                type="text"
+                                value={newAnnouncement.title}
+                                onChange={(e) => setNewAnnouncement({ ...newAnnouncement, title: e.target.value })}
+                                className="w-full px-6 py-4 bg-slate-50 border-2 border-slate-50 rounded-2xl focus:border-rose-500 focus:bg-white transition-all outline-none font-bold text-slate-800"
+                                placeholder="Örn: Sistem Güncellemesi"
+                                required
+                            />
+                        </div>
+
+                        <div>
+                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2 px-2">Duyuru Tipi</label>
+                            <div className="grid grid-cols-3 gap-3">
+                                {(['INFO', 'WARNING', 'URGENT'] as const).map((type) => (
+                                    <button
+                                        key={type}
+                                        type="button"
+                                        onClick={() => setNewAnnouncement({ ...newAnnouncement, type })}
+                                        className={`py-3 rounded-xl text-[10px] font-black uppercase tracking-widest border-2 transition-all ${newAnnouncement.type === type
+                                                ? 'border-rose-500 bg-rose-50 text-rose-600'
+                                                : 'border-slate-100 bg-white text-slate-400'
+                                            }`}
+                                    >
+                                        {type === 'INFO' ? 'Bilgi' : type === 'WARNING' ? 'Uyarı' : 'Acil'}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div>
+                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2 px-2">Mesaj İçeriği</label>
+                            <textarea
+                                value={newAnnouncement.message}
+                                onChange={(e) => setNewAnnouncement({ ...newAnnouncement, message: e.target.value })}
+                                className="w-full px-6 py-4 bg-slate-50 border-2 border-slate-50 rounded-2xl focus:border-rose-500 focus:bg-white transition-all outline-none font-bold text-slate-800 min-h-[150px] resize-none"
+                                placeholder="Öğretmenlere iletmek istediğiniz mesajı yazın..."
+                                required
+                            />
+                        </div>
+
+                        <button
+                            type="submit"
+                            disabled={submitting}
+                            className={`w-full py-5 rounded-2xl text-white font-black uppercase tracking-widest transition-all shadow-xl ${submitting ? 'bg-slate-400' : 'bg-rose-600 hover:bg-rose-700 shadow-rose-200 active:scale-95'
+                                }`}
+                        >
+                            {submitting ? 'Yayınlanıyor...' : 'Duyuruyu Paylaş'}
+                        </button>
+                    </form>
+                </div>
+
+                {/* Active Announcements List */}
+                <div className="lg:col-span-2 bg-white rounded-[3.5rem] shadow-2xl shadow-slate-200/50 border border-slate-100 overflow-hidden flex flex-col">
+                    <div className="px-10 py-8 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            <Megaphone className="text-cyan-600" size={24} />
+                            <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight">Geçmiş Duyurular</h3>
+                        </div>
+                    </div>
+                    <div className="flex-1 overflow-y-auto p-8 space-y-6">
+                        {announcements.length === 0 ? (
+                            <div className="flex flex-col items-center justify-center h-full text-slate-400">
+                                <Megaphone size={48} className="opacity-10 mb-4" />
+                                <p className="text-xs font-black uppercase tracking-widest">Henüz duyuru yayınlanmadı</p>
+                            </div>
+                        ) : (
+                            announcements.map((ann) => (
+                                <div key={ann.id} className="p-8 bg-slate-50 rounded-[2.5rem] border border-slate-100 group transition-all relative overflow-hidden">
+                                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
+                                        <div className="flex-1">
+                                            <div className="flex items-center gap-3 mb-3">
+                                                <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${ann.type === 'URGENT' ? 'bg-rose-100 text-rose-600' :
+                                                        ann.type === 'WARNING' ? 'bg-amber-100 text-amber-600' :
+                                                            'bg-cyan-100 text-cyan-600'
+                                                    }`}>
+                                                    {ann.type === 'URGENT' ? 'Acil' : ann.type === 'WARNING' ? 'Uyarı' : 'Bilgi'}
+                                                </span>
+                                                <span className="text-[10px] font-bold text-slate-400">{new Date(ann.createdAt).toLocaleString()}</span>
+                                            </div>
+                                            <h4 className="text-xl font-black text-slate-800">{ann.title}</h4>
+                                            <p className="text-slate-500 font-medium text-sm mt-2 leading-relaxed">{ann.message}</p>
+                                        </div>
+                                        <div className="flex items-center gap-3">
+                                            <button
+                                                onClick={() => handleToggleAnnouncement(ann.id, ann.isActive)}
+                                                className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest border-2 transition-all ${ann.isActive
+                                                        ? 'bg-emerald-50 text-emerald-600 border-emerald-100 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-100 group/btn'
+                                                        : 'bg-slate-100 text-slate-400 border-slate-200 hover:bg-emerald-50 hover:text-emerald-600 hover:border-emerald-100'
+                                                    }`}
+                                            >
+                                                {ann.isActive ? 'Yayından Kaldır' : 'Tekrar Yayınla'}
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-white/10 to-transparent rounded-bl-[4rem]" />
+                                </div>
+                            ))
+                        )}
+                    </div>
                 </div>
             </div>
         </div>

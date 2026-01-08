@@ -19,7 +19,7 @@ import {
     orderBy,
     limit
 } from "firebase/firestore";
-import { Book, BookStatus, Student, Transaction, SystemLog, SupportRequest } from '../types';
+import { Book, BookStatus, Student, Transaction, SystemLog, SupportRequest, Announcement } from '../types';
 
 const firebaseConfig = {
     apiKey: "AIzaSyABqzz-0liy7ouqh90O53YvB6bP4o4DuJI",
@@ -489,6 +489,55 @@ export const LibraryService = {
             return { latency, status };
         } catch {
             return { latency: 0, status: 'SLOW' };
+        }
+    },
+
+    // --- Announcements ---
+    addAnnouncement: async (announcement: Omit<Announcement, 'id' | 'createdAt' | 'authorEmail' | 'isActive'>) => {
+        try {
+            await addDoc(collection(db, "announcements"), {
+                ...announcement,
+                authorEmail: auth.currentUser?.email,
+                createdAt: new Date().toISOString(),
+                isActive: true
+            });
+            return true;
+        } catch (error) {
+            console.error("addAnnouncement error:", error);
+            return false;
+        }
+    },
+
+    getAnnouncements: async (onlyActive: boolean = true): Promise<Announcement[]> => {
+        try {
+            let q;
+            if (onlyActive) {
+                q = query(
+                    collection(db, "announcements"),
+                    where("isActive", "==", true),
+                    orderBy("createdAt", "desc")
+                );
+            } else {
+                q = query(
+                    collection(db, "announcements"),
+                    orderBy("createdAt", "desc")
+                );
+            }
+            const snapshot = await getDocs(q);
+            return snapshot.docs.map(doc => mapDoc<Announcement>(doc));
+        } catch (error) {
+            console.error("getAnnouncements error:", error);
+            return [];
+        }
+    },
+
+    updateAnnouncementStatus: async (id: string, isActive: boolean) => {
+        try {
+            await updateDoc(doc(db, "announcements", id), { isActive });
+            return true;
+        } catch (error) {
+            console.error("updateAnnouncementStatus error:", error);
+            return false;
         }
     }
 };
