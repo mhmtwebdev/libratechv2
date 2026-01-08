@@ -28,7 +28,7 @@ const firebaseConfig = {
 };
 
 // Admin Email - Burayı kendi mail adresinizle güncelleyin
-export const ADMIN_EMAIL = "mahmutisiyok@gmail.com";
+export const ADMIN_EMAIL = "mahmutissiz@gmail.com";
 
 // Initialize
 const app = initializeApp(firebaseConfig);
