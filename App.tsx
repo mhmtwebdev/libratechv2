@@ -1,16 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { Layout } from './components/Layout';
-import { Login } from './pages/Login';
-import { Dashboard } from './pages/Dashboard';
-import { Circulation } from './pages/Circulation';
-import { BookInventory } from './pages/BookInventory';
-import { Students } from './pages/Students';
-import { Reports } from './pages/Reports';
-import { ParentView } from './pages/ParentView';
-import { AdminDashboard } from './pages/AdminDashboard';
 import { User } from './types';
 import { auth, LibraryService } from './services/firebaseDatabase';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
+
+// Lazy loading pages
+const Login = lazy(() => import('./pages/Login').then(m => ({ default: m.Login })));
+const Dashboard = lazy(() => import('./pages/Dashboard').then(m => ({ default: m.Dashboard })));
+const Circulation = lazy(() => import('./pages/Circulation').then(m => ({ default: m.Circulation })));
+const BookInventory = lazy(() => import('./pages/BookInventory').then(m => ({ default: m.BookInventory })));
+const Students = lazy(() => import('./pages/Students').then(m => ({ default: m.Students })));
+const Reports = lazy(() => import('./pages/Reports').then(m => ({ default: m.Reports })));
+const ParentView = lazy(() => import('./pages/ParentView').then(m => ({ default: m.ParentView })));
+const AdminDashboard = lazy(() => import('./pages/AdminDashboard').then(m => ({ default: m.AdminDashboard })));
 
 const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -62,19 +64,23 @@ const App: React.FC = () => {
 
   if (isParentView) {
     const teacherId = queryParams.get('teacher');
-    return <ParentView teacherId={teacherId} />;
-  }
-
-  if (authLoading) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-        <div className="w-12 h-12 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin" />
-      </div>
+      <Suspense fallback={<LoadingSpinner />}>
+        <ParentView teacherId={teacherId} />
+      </Suspense>
     );
   }
 
+  if (authLoading) {
+    return <LoadingSpinner />;
+  }
+
   if (!user) {
-    return <Login onLogin={handleLogin} />;
+    return (
+      <Suspense fallback={<LoadingSpinner />}>
+        <Login onLogin={handleLogin} />
+      </Suspense>
+    );
   }
 
   const renderPage = () => {
@@ -96,9 +102,18 @@ const App: React.FC = () => {
       onLogout={handleLogout}
       user={user}
     >
-      {renderPage()}
+      <Suspense fallback={<LoadingSpinner />}>
+        {renderPage()}
+      </Suspense>
     </Layout>
   );
 };
+
+// Loading Spinner Component
+const LoadingSpinner = () => (
+  <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+    <div className="w-12 h-12 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin" />
+  </div>
+);
 
 export default App;

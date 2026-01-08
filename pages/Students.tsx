@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { Student } from '../types';
 import { LibraryService } from '../services/firebaseDatabase';
 import { Plus, Printer, Trash2, Search, Book as BookIcon, X, ClipboardList, GraduationCap, FileDown } from 'lucide-react';
-import * as XLSX from 'xlsx';
 import { QRCodeDisplay } from '../components/QRCodeDisplay';
 
 export const Students: React.FC = () => {
@@ -82,7 +81,7 @@ export const Students: React.FC = () => {
     window.print();
   };
 
-  const exportToExcel = () => {
+  const exportToExcel = async () => {
     const dataToExport = filteredStudents.map(student => ({
       'Ad Soyad': student.name,
       'Öğrenci No': student.studentNumber,
@@ -91,6 +90,7 @@ export const Students: React.FC = () => {
       'Email': student.email || 'Belirtilmemiş'
     }));
 
+    const XLSX = await import('xlsx');
     const worksheet = XLSX.utils.json_to_sheet(dataToExport);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Öğrenciler");

@@ -7,7 +7,8 @@ import {
     Printer, Filter, PieChart as PieChartIcon, LogOut, Share2,
     Eye, EyeOff, Lock, Unlock, ClipboardList
 } from 'lucide-react';
-import * as XLSX from 'xlsx';
+
+// Dynamic imports will be used for XLSX and Recharts components
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
     ResponsiveContainer, Cell, PieChart, Pie, Legend
@@ -73,7 +74,8 @@ export const Reports: React.FC = () => {
     const COLORS = ['#0891b2', '#0ea5e9', '#0284c7', '#0369a1', '#3b82f6', '#60a5fa'];
 
     // Export Logic
-    const exportToExcel = (data: any[], fileName: string) => {
+    const exportToExcel = async (data: any[], fileName: string) => {
+        const XLSX = await import('xlsx');
         const worksheet = XLSX.utils.json_to_sheet(data);
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook, worksheet, "Rapor");

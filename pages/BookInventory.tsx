@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { Book, BookStatus } from '../types';
 import { LibraryService } from '../services/firebaseDatabase';
 import { Plus, Printer, Trash2, Search, BookOpen, QrCode, FileDown } from 'lucide-react';
-import * as XLSX from 'xlsx';
 import { QRCodeDisplay } from '../components/QRCodeDisplay';
 
 export const BookInventory: React.FC = () => {
@@ -83,7 +82,7 @@ export const BookInventory: React.FC = () => {
     window.print();
   };
 
-  const exportToExcel = () => {
+  const exportToExcel = async () => {
     const dataToExport = filteredBooks.map(book => ({
       'Kitap Adı': book.title,
       'Yazar': book.author || 'Belirtilmemiş',
@@ -93,6 +92,7 @@ export const BookInventory: React.FC = () => {
       'Eklenme Tarihi': new Date(book.addedDate).toLocaleDateString('tr-TR')
     }));
 
+    const XLSX = await import('xlsx');
     const worksheet = XLSX.utils.json_to_sheet(dataToExport);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Kitaplar");
