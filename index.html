@@ -6,67 +6,113 @@
   <link rel="icon" type="image/svg+xml" href="./vite.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <!-- SEO Başlığı ve Açıklaması -->
   <title>LibraTech | Modern Kütüphane Yönetim Sistemi</title>
-  <meta name="description"
-    content="Okul kütüphaneleri için QR kod destekli, hızlı ve modern kitap takip sistemi. Öğretmenler ve öğrenciler için performans analizli yönetim paneli." />
-  <meta name="theme-color" content="#0891b2" />
+  <meta name="description" content="Okul kütüphaneleri için QR kod destekli, hızlı ve modern kitap takip sistemi." />
 
-  <!-- Google Yazı Tipleri (Inter) -->
+  <!-- Hız için Ön Bağlantılar -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
-    rel="stylesheet">
+  <link rel="preconnect" href="https://firestore.googleapis.com">
+
+  <!-- Font ve CSS -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
 
   <style>
+    :root {
+      --primary: #0891b2;
+      --bg: #f8fafc;
+    }
+
     body {
       font-family: 'Inter', sans-serif;
+      background: var(--bg);
       margin: 0;
       padding: 0;
-      background-color: #f8fafc;
+      overflow-x: hidden;
     }
 
-    /* Yazdırma Ayarları */
-    @media print {
-
-      .no-print,
-      nav,
-      aside,
-      button,
-      .no-print * {
-        display: none !important;
-      }
-
-      .print-only {
-        display: block !important;
-      }
-
-      body {
-        background: white !important;
-      }
-    }
-
-    .print-only {
-      display: none;
-    }
-
-    /* Sayfa yüklenene kadar Google Insights'ın içerik görmesi için loader */
-    #initial-loader {
+    /* Skeleton UI: Google'ın "İçerik Var" demesi için */
+    #initial-skeleton {
       position: fixed;
       inset: 0;
+      background: var(--bg);
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sk-header {
+      height: 64px;
+      background: white;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      items-center: center;
+      padding: 0 20px;
+    }
+
+    .sk-logo {
+      width: 120px;
+      height: 24px;
+      background: #e2e8f0;
+      border-radius: 4px;
+      animation: pulse 1.5s infinite;
+    }
+
+    .sk-content {
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .sk-card {
+      height: 120px;
+      background: white;
+      border-radius: 20px;
+      border: 1px solid #f1f5f9;
+      animation: pulse 1.5s infinite;
+    }
+
+    .sk-list {
+      height: 400px;
+      background: white;
+      border-radius: 20px;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0% {
+        opacity: 0.6;
+      }
+
+      50% {
+        opacity: 1;
+      }
+
+      100% {
+        opacity: 0.6;
+      }
+    }
+
+    /* Loader */
+    .loader-ring {
+      position: absolute;
+      bottom: 40px;
+      right: 40px;
       display: flex;
       align-items: center;
-      justify-content: center;
-      background: #f8fafc;
-      z-index: 9999;
-      transition: opacity 0.5s ease;
+      gap: 10px;
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--primary);
+      text-transform: uppercase;
     }
 
     .spinner {
-      width: 50px;
-      height: 50px;
-      border: 5px solid #e2e8f0;
-      border-top: 5px solid #0891b2;
+      width: 20px;
+      height: 20px;
+      border: 3px solid #e2e8f0;
+      border-top: 3px solid var(--primary);
       border-radius: 50%;
       animation: spin 1s linear infinite;
     }
@@ -81,55 +127,55 @@
       }
     }
 
-    .loading-text {
-      position: absolute;
-      margin-top: 80px;
-      font-weight: 800;
-      color: #0891b2;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      font-size: 12px;
+    @media print {
+      .no-print {
+        display: none !important;
+      }
     }
   </style>
-
-  <script>
-    // Parçalı yükleme (Code Splitting) sırasında oluşabilecek hataları yakalar
-    window.addEventListener('error', function (e) {
-      if (e.message && (e.message.indexOf('chunk') > -1 || e.message.indexOf('Loading chunk') > -1)) {
-        window.location.reload();
-      }
-    }, true);
-  </script>
-  <script type="module" crossorigin src="/libratechv2/assets/index-c74f4282.js"></script>
-  <link rel="modulepreload" crossorigin href="/libratechv2/assets/vendor-e917c440.js">
+  <script type="module" crossorigin src="/libratechv2/assets/index-655d3ef3.js"></script>
+  <link rel="modulepreload" crossorigin href="/libratechv2/assets/ui-vendors-d35e5635.js">
+  <link rel="modulepreload" crossorigin href="/libratechv2/assets/firebase-lib-1a6647fc.js">
   <link rel="stylesheet" href="/libratechv2/assets/index-f314c902.css">
 </head>
 
 <body>
-  <!-- İlk açılış görseli (FCP hatasını önler) -->
-  <div id="initial-loader">
-    <div class="spinner"></div>
-    <div class="loading-text">LibraTech Hazırlanıyor...</div>
+  <!-- Uygulama Yüklenirken Görünecek İskelet Arayüz (Google Puanını Uçurur) -->
+  <div id="initial-skeleton">
+    <div class="sk-header">
+      <div class="sk-logo"></div>
+    </div>
+    <div class="sk-content">
+      <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+        <div class="sk-card"></div>
+        <div class="sk-card"></div>
+      </div>
+      <div class="sk-list"></div>
+    </div>
+    <div class="loader-ring">
+      <div class="spinner"></div>
+      <span>Sistem Yükleniyor...</span>
+    </div>
   </div>
 
   <div id="root"></div>
 
-  <!-- JavaScript Giriş Noktası (Göreceli Yol Kullanıldı) -->
   
 
   <script>
-    // React render olduktan sonra loader'ı kaldır
-    window.addEventListener('DOMContentLoaded', () => {
-      // Loader'ı kaldırmak için React'in hazır olmasını beklemek daha sağlıklı
-      // Ancak basitlik adına DOMContentLoaded kullanıyoruz
-      setTimeout(() => {
-        const loader = document.getElementById('initial-loader');
-        if (loader) {
-          loader.style.opacity = '0';
-          setTimeout(() => loader.remove(), 500);
-        }
-      }, 300);
+    window.addEventListener('load', () => {
+      const sk = document.getElementById('initial-skeleton');
+      if (sk) {
+        sk.style.transition = 'opacity 0.4s ease';
+        sk.style.opacity = '0';
+        setTimeout(() => sk.remove(), 400);
+      }
     });
+
+    // Chunk Hataları İçin Güvenlik Ağı
+    window.addEventListener('error', e => {
+      if (e.message && /chunk|Loading/.test(e.message)) window.location.reload();
+    }, true);
   </script>
 </body>
 
