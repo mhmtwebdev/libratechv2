@@ -15,6 +15,7 @@ import {
     getDoc,
     collectionGroup,
     count,
+    getCountFromServer,
     orderBy,
     limit
 } from "firebase/firestore";
@@ -404,16 +405,18 @@ export const LibraryService = {
 
     getGlobalStats: async () => {
         try {
-            const booksSnap = await getDocs(collectionGroup(db, "books"));
-            const studentsSnap = await getDocs(collectionGroup(db, "students"));
-            const transactionsSnap = await getDocs(collectionGroup(db, "transactions"));
-            const usersSnap = await getDocs(collection(db, "users"));
+            const [booksSnap, studentsSnap, transactionsSnap, usersSnap] = await Promise.all([
+                getCountFromServer(collectionGroup(db, "books")),
+                getCountFromServer(collectionGroup(db, "students")),
+                getCountFromServer(collectionGroup(db, "transactions")),
+                getCountFromServer(collection(db, "users"))
+            ]);
 
             return {
-                totalBooks: booksSnap.size,
-                totalStudents: studentsSnap.size,
-                totalTransactions: transactionsSnap.size,
-                totalTeachers: usersSnap.size
+                totalBooks: booksSnap.data().count,
+                totalStudents: studentsSnap.data().count,
+                totalTransactions: transactionsSnap.data().count,
+                totalTeachers: usersSnap.data().count
             };
         } catch (error) {
             console.error("Global stats error:", error);
