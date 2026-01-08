@@ -39,3 +39,22 @@ export interface User {
   name: string;
   role: 'ADMIN' | 'TEACHER';
 }
+
+export interface SystemLog {
+  id: string;
+  type: 'ERROR' | 'INFO' | 'WARNING';
+  message: string;
+  timestamp: string;
+  teacherId?: string;
+  teacherEmail?: string;
+}
+
+export interface SupportRequest {
+  id: string;
+  teacherId: string;
+  teacherEmail: string;
+  subject: string;
+  message: string;
+  status: 'OPEN' | 'IN_PROGRESS' | 'CLOSED';
+  createdAt: string;
+}

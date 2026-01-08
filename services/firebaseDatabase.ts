@@ -11,12 +11,12 @@ import {
     query,
     where,
     Timestamp,
-    setDoc,
-    getDoc,
     collectionGroup,
-    count
+    count,
+    orderBy,
+    limit
 } from "firebase/firestore";
-import { Book, BookStatus, Student, Transaction } from '../types';
+import { Book, BookStatus, Student, Transaction, SystemLog, SupportRequest } from '../types';
 
 const firebaseConfig = {
     apiKey: "AIzaSyABqzz-0liy7ouqh90O53YvB6bP4o4DuJI",
@@ -360,13 +360,15 @@ export const LibraryService = {
     // --- Admin / Global Stats ---
     getUserRole: async (uid: string): Promise<'ADMIN' | 'TEACHER'> => {
         try {
+            // Priority: Hardcoded Admin Email check
+            const email = auth.currentUser?.email;
+            if (email === ADMIN_EMAIL) return 'ADMIN';
+
+            // Fallback: Check Firestore document
             const userDoc = await getDoc(doc(db, "users", uid));
             if (userDoc.exists()) {
                 return userDoc.data().role || 'TEACHER';
             }
-            // First time login with admin email?
-            const email = auth.currentUser?.email;
-            if (email === ADMIN_EMAIL) return 'ADMIN';
             return 'TEACHER';
         } catch {
             return 'TEACHER';
@@ -377,12 +379,21 @@ export const LibraryService = {
         try {
             const userRef = doc(db, "users", uid);
             const userDoc = await getDoc(userRef);
+
+            // Determine correct role based on email
+            const role = data.email === ADMIN_EMAIL ? 'ADMIN' : 'TEACHER';
+
             if (!userDoc.exists()) {
                 await setDoc(userRef, {
                     ...data,
-                    role: data.email === ADMIN_EMAIL ? 'ADMIN' : 'TEACHER',
+                    role: role,
                     createdAt: new Date().toISOString()
                 });
+            } else {
+                // If user exists but role is wrong (e.g. became admin later), update it
+                if (userDoc.data().role !== role) {
+                    await updateDoc(userRef, { role: role });
+                }
             }
         } catch (error) {
             console.error("Sync profile error:", error);
@@ -415,6 +426,64 @@ export const LibraryService = {
         } catch (error) {
             console.error("getTeachers error:", error);
             return [];
+        }
+    },
+
+    // --- Technical Health & Support ---
+    addLog: async (log: Omit<SystemLog, 'id' | 'timestamp'>) => {
+        try {
+            await addDoc(collection(db, "system_logs"), {
+                ...log,
+                timestamp: new Date().toISOString()
+            });
+        } catch (e) {
+            console.error("LOG ERROR:", e);
+        }
+    },
+
+    getSystemLogs: async (): Promise<SystemLog[]> => {
+        try {
+            const q = query(
+                collection(db, "system_logs"),
+                orderBy("timestamp", "desc"),
+                limit(50)
+            );
+            const snapshot = await getDocs(q);
+            return snapshot.docs.map(doc => mapDoc<SystemLog>(doc));
+        } catch (error) {
+            console.error("getSystemLogs error:", error);
+            return [];
+        }
+    },
+
+    getSupportRequests: async (): Promise<SupportRequest[]> => {
+        try {
+            const q = query(
+                collection(db, "support_requests"),
+                orderBy("createdAt", "desc")
+            );
+            const snapshot = await getDocs(q);
+            return snapshot.docs.map(doc => mapDoc<SupportRequest>(doc));
+        } catch (error) {
+            console.error("getSupportRequests error:", error);
+            return [];
+        }
+    },
+
+    getSystemPerformance: async (): Promise<{ latency: number, status: 'EXCELLENT' | 'GOOD' | 'SLOW' }> => {
+        const start = performance.now();
+        try {
+            // Küçük bir sorgu ile gecikme ölçümü
+            await getDocs(query(collection(db, "users"), limit(1)));
+            const latency = Math.round(performance.now() - start);
+
+            let status: 'EXCELLENT' | 'GOOD' | 'SLOW' = 'EXCELLENT';
+            if (latency > 500) status = 'SLOW';
+            else if (latency > 200) status = 'GOOD';
+
+            return { latency, status };
+        } catch {
+            return { latency: 0, status: 'SLOW' };
         }
     }
 };
