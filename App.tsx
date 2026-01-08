@@ -7,8 +7,9 @@ import { BookInventory } from './pages/BookInventory';
 import { Students } from './pages/Students';
 import { Reports } from './pages/Reports';
 import { ParentView } from './pages/ParentView';
+import { AdminDashboard } from './pages/AdminDashboard';
 import { User } from './types';
-import { auth } from './services/firebaseDatabase';
+import { auth, LibraryService } from './services/firebaseDatabase';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 
 const App: React.FC = () => {
@@ -24,18 +25,20 @@ const App: React.FC = () => {
     // Listen for Firebase Auth state changes
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       if (firebaseUser) {
-        // User is signed in
-        setUser({
-          id: firebaseUser.uid,
-          name: firebaseUser.displayName || 'Öğretmen',
-          email: firebaseUser.email || '',
-          role: 'ADMIN' // Default role
+        // Fetch role from Firestore
+        LibraryService.getUserRole(firebaseUser.uid).then(role => {
+          setUser({
+            id: firebaseUser.uid,
+            role: role,
+            email: firebaseUser.email || '',
+            name: firebaseUser.displayName || 'Öğretmen'
+          });
+          setAuthLoading(false);
         });
       } else {
-        // User is signed out
         setUser(null);
+        setAuthLoading(false);
       }
-      setAuthLoading(false);
     });
 
     // Cleanup subscription
@@ -81,6 +84,7 @@ const App: React.FC = () => {
       case 'books': return <BookInventory />;
       case 'students': return <Students />;
       case 'reports': return <Reports />;
+      case 'admin': return <AdminDashboard />;
       default: return <Dashboard />;
     }
   };

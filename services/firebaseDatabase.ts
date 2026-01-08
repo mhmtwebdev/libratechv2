@@ -12,11 +12,12 @@ import {
     where,
     Timestamp,
     setDoc,
-    getDoc
+    getDoc,
+    collectionGroup,
+    count
 } from "firebase/firestore";
 import { Book, BookStatus, Student, Transaction } from '../types';
 
-// Configuration - LibraTech V2
 const firebaseConfig = {
     apiKey: "AIzaSyABqzz-0liy7ouqh90O53YvB6bP4o4DuJI",
     authDomain: "libratechv2.firebaseapp.com",
@@ -25,6 +26,9 @@ const firebaseConfig = {
     messagingSenderId: "729755713200",
     appId: "1:729755713200:web:a7eec17be1fb7928718575"
 };
+
+// Admin Email - Burayı kendi mail adresinizle güncelleyin
+export const ADMIN_EMAIL = "mahmutisiyok@gmail.com";
 
 // Initialize
 const app = initializeApp(firebaseConfig);
@@ -47,7 +51,8 @@ export const getRefs = (teacherId?: string) => {
         books: collection(db, "users", uid, "books"),
         students: collection(db, "users", uid, "students"),
         transactions: collection(db, "users", uid, "transactions"),
-        settings: doc(db, "users", uid, "settings", "global")
+        settings: doc(db, "users", uid, "settings", "global"),
+        profile: doc(db, "users", uid)
     };
 };
 
@@ -349,6 +354,67 @@ export const LibraryService = {
         } catch (error) {
             console.error("Settings update error:", error);
             return false;
+        }
+    },
+
+    // --- Admin / Global Stats ---
+    getUserRole: async (uid: string): Promise<'ADMIN' | 'TEACHER'> => {
+        try {
+            const userDoc = await getDoc(doc(db, "users", uid));
+            if (userDoc.exists()) {
+                return userDoc.data().role || 'TEACHER';
+            }
+            // First time login with admin email?
+            const email = auth.currentUser?.email;
+            if (email === ADMIN_EMAIL) return 'ADMIN';
+            return 'TEACHER';
+        } catch {
+            return 'TEACHER';
+        }
+    },
+
+    syncUserProfile: async (uid: string, data: { name: string, email: string }) => {
+        try {
+            const userRef = doc(db, "users", uid);
+            const userDoc = await getDoc(userRef);
+            if (!userDoc.exists()) {
+                await setDoc(userRef, {
+                    ...data,
+                    role: data.email === ADMIN_EMAIL ? 'ADMIN' : 'TEACHER',
+                    createdAt: new Date().toISOString()
+                });
+            }
+        } catch (error) {
+            console.error("Sync profile error:", error);
+        }
+    },
+
+    getGlobalStats: async () => {
+        try {
+            const booksSnap = await getDocs(collectionGroup(db, "books"));
+            const studentsSnap = await getDocs(collectionGroup(db, "students"));
+            const transactionsSnap = await getDocs(collectionGroup(db, "transactions"));
+            const usersSnap = await getDocs(collection(db, "users"));
+
+            return {
+                totalBooks: booksSnap.size,
+                totalStudents: studentsSnap.size,
+                totalTransactions: transactionsSnap.size,
+                totalTeachers: usersSnap.size
+            };
+        } catch (error) {
+            console.error("Global stats error:", error);
+            return { totalBooks: 0, totalStudents: 0, totalTransactions: 0, totalTeachers: 0 };
+        }
+    },
+
+    getTeachers: async (): Promise<any[]> => {
+        try {
+            const snapshot = await getDocs(collection(db, "users"));
+            return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        } catch (error) {
+            console.error("getTeachers error:", error);
+            return [];
         }
     }
 };

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Library, Mail, Lock, User, ArrowRight, Chrome, Eye, EyeOff, Sparkles, AlertCircle } from 'lucide-react';
-import { auth, googleProvider } from '../services/firebaseDatabase';
+import { auth, googleProvider, LibraryService } from '../services/firebaseDatabase';
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
@@ -25,7 +25,13 @@ export const Login: React.FC<LoginProps> = ({ onLogin }) => {
     setLoading(true);
     setError(null);
     try {
-      await signInWithPopup(auth, googleProvider);
+      const res = await signInWithPopup(auth, googleProvider);
+      if (res.user) {
+        await LibraryService.syncUserProfile(res.user.uid, {
+          name: res.user.displayName || '',
+          email: res.user.email || ''
+        });
+      }
       onLogin();
     } catch (err: any) {
       console.error("Google auth error:", err);
@@ -52,7 +58,11 @@ export const Login: React.FC<LoginProps> = ({ onLogin }) => {
         }
       } else {
         // Sign In
-        await signInWithEmailAndPassword(auth, email, password);
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        await LibraryService.syncUserProfile(userCredential.user.uid, {
+          name: userCredential.user.displayName || name || '',
+          email: userCredential.user.email || ''
+        });
       }
       onLogin();
     } catch (err: any) {

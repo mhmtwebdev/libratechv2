@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BookOpen, Users, LayoutDashboard, ArrowLeftRight, LogOut, Library, Menu, X, BarChart3 } from 'lucide-react';
+import { BookOpen, Users, LayoutDashboard, ArrowLeftRight, LogOut, Library, Menu, X, BarChart3, ShieldCheck } from 'lucide-react';
 import { LibraryService } from '../services/firebaseDatabase';
 
 interface LayoutProps {
@@ -20,6 +20,12 @@ export const Layout: React.FC<LayoutProps> = ({ children, currentPage, onNavigat
     { id: 'students', label: 'Öğrenciler', icon: Users },
     { id: 'reports', label: 'Raporlar', icon: BarChart3 },
   ];
+
+  const adminItems = user.role === 'ADMIN' ? [
+    { id: 'admin', label: 'Admin Paneli', icon: ShieldCheck }
+  ] : [];
+
+  const allNavItems = [...navItems, ...adminItems];
 
 
 
@@ -77,7 +83,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, currentPage, onNavigat
         </div>
 
         <nav className="flex-1 p-4 space-y-2">
-          {navItems.map((item) => {
+          {allNavItems.map((item) => {
             const Icon = item.icon;
             const isActive = currentPage === item.id;
             return (
