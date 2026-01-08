@@ -5,6 +5,14 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>LibraTech Okul Kütüphanesi</title>
+  <script>
+    // Savunma Hattı 2: JavaScript dosyaları yüklenemezse (Chunk Error), sayfayı otomatik yenile
+    window.addEventListener('error', function(e) {
+      if (e.message && (e.message.indexOf('chunk') > -1 || e.message.indexOf('Loading chunk') > -1)) {
+        window.location.reload();
+      }
+    }, true);
+  </script>
 
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
@@ -81,9 +89,9 @@
   }
 }
 </script>
-  <script type="module" crossorigin src="/libratechv2/assets/index-ecad0c0d.js"></script>
-  <link rel="modulepreload" crossorigin href="/libratechv2/assets/vendor-fd2a6a95.js">
-  <link rel="stylesheet" href="/libratechv2/assets/index-5297d8b9.css">
+  <script type="module" crossorigin src="/libratechv2/assets/index-bdbde500.js"></script>
+  <link rel="modulepreload" crossorigin href="/libratechv2/assets/vendor-697a2fc5.js">
+  <link rel="stylesheet" href="/libratechv2/assets/index-4d570b21.css">
 </head>
 
 <body>
