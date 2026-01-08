@@ -310,7 +310,7 @@ export const Students: React.FC = () => {
                     <button
                       onClick={() => {
                         setSelectedIds([student.id]);
-                        setTimeout(() => window.print(), 100);
+                        setTimeout(() => window.print(), 800);
                       }}
                       className="text-slate-400 hover:text-cyan-600 p-2 rounded-xl hover:bg-cyan-50 transition-all no-print"
                       title="Sadece Bu Kartı Yazdır"
@@ -349,7 +349,7 @@ export const Students: React.FC = () => {
                 <button
                   onClick={() => {
                     setSelectedIds([student.id]);
-                    setTimeout(() => window.print(), 100);
+                    setTimeout(() => window.print(), 800);
                   }}
                   className="text-slate-400 p-2 rounded-xl bg-slate-50 active:bg-cyan-100 transition-colors"
                 >
