@@ -549,5 +549,17 @@ export const LibraryService = {
             console.error("deleteAnnouncement error:", error);
             return false;
         }
+    },
+
+    createUserProfile: async (userId: string, data: any) => {
+        try {
+            await setDoc(doc(db, "users", userId), data, { merge: true });
+            return true;
+        } catch (error) {
+            console.error("createUserProfile error:", error);
+            // Don't block flow if user profile creation fails, 
+            // the auth account is still created.
+            return false;
+        }
     }
 };
