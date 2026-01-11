@@ -1,11 +1,12 @@
 import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { Layout } from './components/Layout';
+import { Login } from './pages/Login';
 import { User } from './types';
 import { auth, LibraryService } from './services/firebaseDatabase';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 
 // Lazy loading pages
-const Login = lazy(() => import('./pages/Login').then(m => ({ default: m.Login })));
+// Login sayfası LCP performansı için direkt yükleniyor (Lazy load değil)
 const Dashboard = lazy(() => import('./pages/Dashboard').then(m => ({ default: m.Dashboard })));
 const Circulation = lazy(() => import('./pages/Circulation').then(m => ({ default: m.Circulation })));
 const BookInventory = lazy(() => import('./pages/BookInventory').then(m => ({ default: m.BookInventory })));
