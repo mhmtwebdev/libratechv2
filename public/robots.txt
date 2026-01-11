@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /student-view
+Sitemap: https://sinifkutuphanem.com/sitemap.xml
