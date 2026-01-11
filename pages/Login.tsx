@@ -39,7 +39,7 @@ export const Login: React.FC<LoginProps> = ({ onLogin }) => {
     },
     {
       question: "QR Kod sistemi nasıl çalışır?",
-      answer: "Sistem, her kitabınız ve öğrenciniz için özel bir QR kod üretir. Bu kodları bir kez yazıcıdan çıkarıp yapıştırdığınızda, ödünç verme işlemi sadece kameraya okutarak 1 saniyede tamamlanır."
+      answer: "Sistem, her kitabınız ve öğrenciniz için özel bir QR kod üretir. Bu kodları bir kez yazıcıdan çıkarıp yapıştırdığınızda, ödünç verme işlemi sadece kameraya okutarak 1 saniyede tamamlanır. \n\n(Önemli İpucu: QR kodların net çıkması ve sorunsuz çalışması için çıktıları telefondan değil, lütfen bilgisayar üzerinden alınız.)"
     },
     {
       question: "Veliler sisteme giriş yapabilir mi?",
